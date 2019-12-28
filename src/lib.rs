@@ -7,7 +7,10 @@
 //#![feature(avx512_target_feature)]
 //#![feature(sse4a_target_feature)]
 
-mod base;
 mod advanced;
+mod base;
+mod view;
+mod types;
 
-pub use base::{Vector, FullMath, Matrix};
+pub use types::{FullMath, Matrix, Vector};
+
