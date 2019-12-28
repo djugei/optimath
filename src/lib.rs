@@ -1,7 +1,7 @@
 #![no_std]
 #![allow(incomplete_features)]
 #![feature(const_generics)]
-//#![feature(specialization)]
+#![feature(specialization)]
 #![feature(trait_alias)]
 #![feature(maybe_uninit_extra)]
 //#![feature(avx512_target_feature)]
@@ -14,7 +14,9 @@ use core::ops::*;
 pub trait Math =
     Add<Output = Self> + Sub<Output = Self> + Mul<Output = Self> + Div<Output = Self> + Sized;
 
-pub trait FullMath = Math;
+pub trait SelfMath = AddAssign + SubAssign + MulAssign + DivAssign + Sized;
+
+pub trait FullMath = Math;// + SelfMath;
 
 #[repr(transparent)]
 #[derive(Copy, Clone)]
@@ -119,59 +121,65 @@ impl<T: FullMath + Default, const N: usize> Default for Vector<T, N> {
     }
 }
 
-// reference operations, getting recrursive problems on where clause
+// reference operations
+// need to have the Output = T on the Add for &T, otherwise you get infinite recursion
 
-/*
 impl<'a, T: FullMath, const N: usize> Add for &'a Vector<T, N>
-where
-    &'a T: Add,
+where &'a T: Add<Output = T>
 {
     type Output = Vector<T, N>;
     fn add(self, other: Self) -> Vector<T, N> {
         self.inner
             .iter()
             .zip(other.inner.iter())
-            .map(|(s, o)| s + o)
+            .map(|(s, o)| Add::add(s, o))
             .collect()
     }
 }
 
-impl<T: FullMath, const N: usize> Sub for &Vector<T, N> {
+impl<'a, T: FullMath, const N: usize> Sub for &'a Vector<T, N>
+where &'a T: Sub<Output = T>
+{
     type Output = Vector<T, N>;
     fn sub(self, other: Self) -> Vector<T, N> {
         self.inner
             .iter()
             .zip(other.inner.iter())
-            .map(|(s, o)| s-o)
+            .map(|(s, o)| Sub::sub(s, o))
             .collect()
     }
 }
 
-impl<T: FullMath, const N: usize> Mul for &Vector<T, N> {
+impl<'a, T: FullMath, const N: usize> Mul for &'a Vector<T, N>
+where &'a T: Mul<Output = T>
+{
     type Output = Vector<T, N>;
     fn mul(self, other: Self) -> Vector<T, N> {
         self.inner
             .iter()
             .zip(other.inner.iter())
-            .map(|(s, o)| s * o
+            .map(|(s, o)| Mul::mul(s, o))
             .collect()
     }
 }
 
-impl<T: FullMath, const N: usize> Div for &Vector<T, N> {
+impl<'a, T: FullMath, const N: usize> Div for &'a Vector<T, N>
+where &'a T: Div<Output = T>
+{
     type Output = Vector<T, N>;
     fn div(self, other: Self) -> Vector<T, N> {
         self.inner
             .iter()
             .zip(other.inner.iter())
-            .map(|(s, o)| s / o)
+            .map(|(s, o)| Div::div(s, o))
             .collect()
     }
 }
-*/
+
 // direct operations
 
-impl<T: FullMath, const N: usize> Add for Vector<T, N> {
+impl<T: FullMath, const N: usize> Add for Vector<T, N> 
+{
     type Output = Vector<T, N>;
     fn add(self, other: Self) -> Vector<T, N> {
         self.into_iter()
@@ -208,6 +216,112 @@ impl<T: FullMath, const N: usize> Div for Vector<T, N> {
             .zip(other.into_iter())
             .map(|(s, o)| s / o)
             .collect()
+    }
+}
+
+// assigning operations
+
+impl<T: FullMath, const N: usize> AddAssign for Vector<T, N>
+where
+    T: AddAssign<T>
+{
+    fn add_assign(&mut self, other: Vector<T, N>) {
+        let iter = self.inner.iter_mut()
+            .zip(other.into_iter());
+        for (s, o) in iter {
+            *s += o
+        }
+    }
+}
+
+impl<'a, T: FullMath, const N: usize> AddAssign<&'a Vector<T, N>> for Vector<T, N>
+where
+    T: AddAssign<&'a T>
+{
+    fn add_assign(&mut self, other: &'a Vector<T, N>) {
+        let iter = self.inner.iter_mut()
+            .zip(other.inner.iter());
+        for (s, o) in iter {
+            *s += o
+        }
+    }
+}
+
+impl<T: FullMath, const N: usize> SubAssign for Vector<T, N>
+where
+    T: SubAssign<T>
+{
+    fn sub_assign(&mut self, other: Vector<T, N>) {
+        let iter = self.inner.iter_mut()
+            .zip(other.into_iter());
+        for (s, o) in iter {
+            *s -= o
+        }
+    }
+}
+
+impl<'a, T: FullMath, const N: usize> SubAssign<&'a Vector<T, N>> for Vector<T, N>
+where
+    T: SubAssign<&'a T>
+{
+    fn sub_assign(&mut self, other: &'a Vector<T, N>) {
+        let iter = self.inner.iter_mut()
+            .zip(other.inner.iter());
+        for (s, o) in iter {
+            *s -= o
+        }
+    }
+}
+
+impl<T: FullMath, const N: usize> MulAssign for Vector<T, N>
+where
+    T: MulAssign<T>
+{
+    fn mul_assign(&mut self, other: Vector<T, N>) {
+        let iter = self.inner.iter_mut()
+            .zip(other.into_iter());
+        for (s, o) in iter {
+            *s *= o
+        }
+    }
+}
+
+impl<'a, T: FullMath, const N: usize> MulAssign<&'a Vector<T, N>> for Vector<T, N>
+where
+    T: MulAssign<&'a T>
+{
+    fn mul_assign(&mut self, other: &'a Vector<T, N>) {
+        let iter = self.inner.iter_mut()
+            .zip(other.inner.iter());
+        for (s, o) in iter {
+            *s *= o
+        }
+    }
+}
+
+impl<T: FullMath, const N: usize> DivAssign for Vector<T, N>
+where
+    T: DivAssign<T>
+{
+    fn div_assign(&mut self, other: Vector<T, N>) {
+        let iter = self.inner.iter_mut()
+            .zip(other.into_iter());
+        for (s, o) in iter {
+            *s /= o
+        }
+    }
+}
+
+impl<'a, T: FullMath, const N: usize> DivAssign<&'a Vector<T, N>> for Vector<T, N>
+where
+    T: DivAssign<&'a T>
+{
+    fn div_assign(&mut self, other: &'a Vector<T, N>) {
+        let iter = self.inner.iter_mut()
+            .zip(other.inner.iter());
+        for (s, o) in iter {
+            *s /= o
+        }
     }
 }
 
