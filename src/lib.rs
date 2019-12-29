@@ -6,13 +6,11 @@
 #![feature(maybe_uninit_extra)]
 //#![feature(avx512_target_feature)]
 //#![feature(sse4a_target_feature)]
-
 #![allow(dead_code)]
 
 mod advanced;
 mod base;
-mod view;
 mod types;
+mod view;
 
 pub use types::{Matrix, Vector};
-
