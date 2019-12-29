@@ -14,3 +14,5 @@ mod types;
 mod view;
 
 pub use types::{Matrix, Vector};
+pub use view::{TransposedMatrixView, VectorView};
+// add a type like StaticSizedIterator to make reasoning about dimensions easier

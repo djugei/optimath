@@ -46,9 +46,10 @@ pub struct TransIter<'a, T, const M: usize, const N: usize> {
 impl<'a, T, const M: usize, const N: usize> Iterator for TransIter<'a, T, M, N> {
 	type Item = VectorView<'a, T, M, N>;
 	fn next(&mut self) -> Option<VectorView<'a, T, M, N>> {
-		if self.pos == M {
+		if self.pos == N {
 			None
 		} else {
+            //println!("pos: {}, M: {}, N: {}", self.pos, M, N);
 			let out = self.trans.get(self.pos);
 			self.pos += 1;
 			Some(out)
@@ -77,13 +78,14 @@ pub struct ViewIter<'a, T, const M: usize, const N: usize> {
 impl<'a, T, const M: usize, const N: usize> Iterator for ViewIter<'a, T, M, N> {
 	type Item = &'a T;
 	fn next(&mut self) -> Option<&'a T> {
-		debug_assert_eq!(N, self.view.matrix.inner.len());
-		if self.pos == N {
+		if self.pos == M {
 			None
 		} else {
-			let out = Some(&self.view.matrix[self.pos][self.view.row]);
+            //println!("row: {}, pos: {}, M: {}, N: {}", self.view.row, self.pos, M, N);
+			let row = &self.view.matrix[self.pos];
+            let element = &row[self.view.row];
 			self.pos += 1;
-			out
+			Some(element)
 		}
 	}
 }
@@ -109,10 +111,36 @@ where
 	fn mul(self, other: VectorView<'b, T, M, N>) -> Vector<T, N> {
 		self.into_iter()
 			.zip(other.into_iter())
-			.map(|(s, o)| s * o)
+			.map(|(s, o)| Mul::mul(s, o))
 			.collect()
 	}
 }
 
 #[cfg(test)]
 use crate::base::TESTLEN;
+
+#[test]
+fn transmute_bounds_1() {
+	let a: Matrix<f32, 1, 2> = Default::default();
+    let b = a.transpose();
+
+    for r in b {
+        for e in r {
+            assert_eq!(e, &0.);
+        }
+    }
+    let b = b.materialize();
+}
+
+#[test]
+fn transmute_bounds_2() {
+	let a: Matrix<f32, 2, 1> = Default::default();
+    let b = a.transpose();
+
+    for r in b {
+        for e in r {
+            assert_eq!(e, &0.);
+        }
+    }
+    let b = b.materialize();
+}
