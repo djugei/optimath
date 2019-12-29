@@ -2,23 +2,23 @@ use core::ops::*;
 use core::mem::MaybeUninit;
 use core::iter::{FromIterator, IntoIterator};
 
-pub trait Math =
-    Add<Output = Self> + Sub<Output = Self> + Mul<Output = Self> + Div<Output = Self> + Sized;
+//pub trait Math =
+//    Add<Output = Self> + Sub<Output = Self> + Mul<Output = Self> + Div<Output = Self> + Sized;
 
-pub trait SelfMath = AddAssign + SubAssign + MulAssign + DivAssign + Sized;
+//pub trait SelfMath = AddAssign + SubAssign + MulAssign + DivAssign + Sized;
 
-pub trait FullMath = Math; // + SelfMath;
+//pub trait FullMath = Math; // + SelfMath;
 
 #[repr(transparent)]
 #[derive(Copy, Clone)]
-pub struct Vector<T: FullMath, const N: usize> {
+pub struct Vector<T, const N: usize> {
     pub(crate) inner: [T; N],
 }
 
 /// Matrix is column-major
 pub type Matrix<T, const M: usize, const N: usize> = Vector<Vector<T, N>, M>;
 
-impl<T: FullMath, const N: usize> Vector<T, N> {
+impl<T, const N: usize> Vector<T, N> {
     pub(crate) fn uninit_inner() -> MaybeUninit<[T; N]> {
         MaybeUninit::uninit()
     }
@@ -27,20 +27,20 @@ impl<T: FullMath, const N: usize> Vector<T, N> {
     }
 }
 
-impl<T: FullMath, const N: usize> Index<usize> for Vector<T, N> {
+impl<T, const N: usize> Index<usize> for Vector<T, N> {
     type Output = T;
     fn index(&self, index: usize) -> &T {
         &self.inner[index]
     }
 }
 
-impl<T: FullMath, const N: usize> IndexMut<usize> for Vector<T, N> {
+impl<T, const N: usize> IndexMut<usize> for Vector<T, N> {
     fn index_mut(&mut self, index: usize) -> &mut T {
         &mut self.inner[index]
     }
 }
 
-impl<T: FullMath, const N: usize> FromIterator<T> for Vector<T, N> {
+impl<T, const N: usize> FromIterator<T> for Vector<T, N> {
     fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
         let mut iter = iter.into_iter();
         let mut inner = Self::uninit_inner();
@@ -61,12 +61,12 @@ impl<T: FullMath, const N: usize> FromIterator<T> for Vector<T, N> {
 }
 
 // iter stuff just required cause impls on arrays are limited to 32 elements (for no reason)
-pub struct IntoIter<T: FullMath, const N: usize> {
+pub struct IntoIter<T, const N: usize> {
     pos: usize,
     data: [MaybeUninit<T>; N],
 }
 
-impl<T: FullMath, const N: usize> IntoIter<T, N> {
+impl<T, const N: usize> IntoIter<T, N> {
     fn new(vector: Vector<T, N>) -> Self {
         let data = unsafe {
             let data =
@@ -78,7 +78,7 @@ impl<T: FullMath, const N: usize> IntoIter<T, N> {
     }
 }
 
-impl<T: FullMath, const N: usize> Iterator for IntoIter<T, N> {
+impl<T, const N: usize> Iterator for IntoIter<T, N> {
     type Item = T;
     fn next(&mut self) -> Option<T> {
         if self.pos == N {
@@ -91,7 +91,7 @@ impl<T: FullMath, const N: usize> Iterator for IntoIter<T, N> {
     }
 }
 
-impl<T: FullMath, const N: usize> Drop for IntoIter<T, N> {
+impl<T, const N: usize> Drop for IntoIter<T, N> {
     fn drop(&mut self) {
         let range = self.pos..N;
         for offset in range {
@@ -101,7 +101,7 @@ impl<T: FullMath, const N: usize> Drop for IntoIter<T, N> {
     }
 }
 
-impl<T: FullMath, const N: usize> IntoIterator for Vector<T, N> {
+impl<T, const N: usize> IntoIterator for Vector<T, N> {
     type Item = T;
     type IntoIter = IntoIter<T, { N }>;
 
@@ -110,7 +110,7 @@ impl<T: FullMath, const N: usize> IntoIterator for Vector<T, N> {
     }
 }
 
-impl<T: FullMath + Default, const N: usize> Default for Vector<T, N> {
+impl<T: Default, const N: usize> Default for Vector<T, N> {
     fn default() -> Self {
         let mut x = Self::uninit_inner();
         let base = x.as_mut_ptr() as *mut T;
@@ -125,4 +125,3 @@ impl<T: FullMath + Default, const N: usize> Default for Vector<T, N> {
         Vector { inner }
     }
 }
-
