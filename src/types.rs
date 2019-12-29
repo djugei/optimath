@@ -1,13 +1,6 @@
-use core::ops::*;
-use core::mem::MaybeUninit;
 use core::iter::{FromIterator, IntoIterator};
-
-//pub trait Math =
-//    Add<Output = Self> + Sub<Output = Self> + Mul<Output = Self> + Div<Output = Self> + Sized;
-
-//pub trait SelfMath = AddAssign + SubAssign + MulAssign + DivAssign + Sized;
-
-//pub trait FullMath = Math; // + SelfMath;
+use core::mem::MaybeUninit;
+use core::ops::*;
 
 #[repr(transparent)]
 #[derive(Copy, Clone)]
@@ -16,7 +9,7 @@ pub struct Vector<T, const N: usize> {
 }
 
 /// Matrix is column-major
-pub type Matrix<T, const M: usize, const N: usize> = Vector<Vector<T, N>, M>;
+pub type Matrix<T, const M: usize, const N: usize> = Vector<Vector<T, M>, N>;
 
 impl<T, const N: usize> Vector<T, N> {
     pub(crate) fn uninit_inner() -> MaybeUninit<[T; N]> {
@@ -107,6 +100,15 @@ impl<T, const N: usize> IntoIterator for Vector<T, N> {
 
     fn into_iter(self) -> Self::IntoIter {
         IntoIter::new(self)
+    }
+}
+
+impl<'a, T, const N: usize> IntoIterator for &'a Vector<T, N> {
+    type Item = &'a T;
+    type IntoIter = core::slice::Iter<'a, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.inner.iter()
     }
 }
 

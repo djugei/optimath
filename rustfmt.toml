@@ -1,0 +1,16 @@
+hard_tabs = true
+
+fn_single_line = true
+struct_lit_single_line = true
+
+merge_imports = true
+use_field_init_shorthand = true
+
+overflow_delimited_expr = true
+#blank_lines_lower_bound = 1
+format_code_in_doc_comments = true
+match_block_trailing_comma = true
+newline_style = "Unix"
+version = "Two"
+normalize_doc_attributes = true
+unstable_features = true
