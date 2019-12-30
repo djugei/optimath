@@ -10,6 +10,15 @@ pub struct Vector<T, const N: usize> {
 	pub(crate) inner: [T; N],
 }
 
+/* ICE
+use mem::size_of;
+const SIMD_BYTES: usize = 128;
+
+pub struct FearMyPower<T, const N: usize> {
+	inner : [T; SIMD_BYTES/size_of::<T>()]
+}
+*/
+
 /// Matrix is column-major
 pub type Matrix<T, const M: usize, const N: usize> = Vector<Vector<T, M>, N>;
 
