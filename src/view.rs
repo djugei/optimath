@@ -49,7 +49,7 @@ impl<'a, T, const M: usize, const N: usize> Iterator for TransIter<'a, T, M, N> 
 		if self.pos == N {
 			None
 		} else {
-            //println!("pos: {}, M: {}, N: {}", self.pos, M, N);
+			//println!("pos: {}, M: {}, N: {}", self.pos, M, N);
 			let out = self.trans.get(self.pos);
 			self.pos += 1;
 			Some(out)
@@ -81,9 +81,9 @@ impl<'a, T, const M: usize, const N: usize> Iterator for ViewIter<'a, T, M, N> {
 		if self.pos == M {
 			None
 		} else {
-            //println!("row: {}, pos: {}, M: {}, N: {}", self.view.row, self.pos, M, N);
+			//println!("row: {}, pos: {}, M: {}, N: {}", self.view.row, self.pos, M, N);
 			let row = &self.view.matrix[self.pos];
-            let element = &row[self.view.row];
+			let element = &row[self.view.row];
 			self.pos += 1;
 			Some(element)
 		}
@@ -122,25 +122,25 @@ use crate::base::TESTLEN;
 #[test]
 fn transmute_bounds_1() {
 	let a: Matrix<f32, 1, 2> = Default::default();
-    let b = a.transpose();
+	let b = a.transpose();
 
-    for r in b {
-        for e in r {
-            assert_eq!(e, &0.);
-        }
-    }
-    let b = b.materialize();
+	for r in b {
+		for e in r {
+			assert_eq!(e, &0.);
+		}
+	}
+	let b = b.materialize();
 }
 
 #[test]
 fn transmute_bounds_2() {
 	let a: Matrix<f32, 2, 1> = Default::default();
-    let b = a.transpose();
+	let b = a.transpose();
 
-    for r in b {
-        for e in r {
-            assert_eq!(e, &0.);
-        }
-    }
-    let b = b.materialize();
+	for r in b {
+		for e in r {
+			assert_eq!(e, &0.);
+		}
+	}
+	let b = b.materialize();
 }
