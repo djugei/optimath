@@ -9,6 +9,7 @@
 
 mod advanced;
 mod base;
+mod layout;
 mod simd;
 mod types;
 mod view;
