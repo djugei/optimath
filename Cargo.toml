@@ -10,4 +10,11 @@ repository = "https://github.com/djugei/optimath/"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-packed_simd="0.3"
+#packed_simd="0.3"
+
+[dev-dependencies]
+criterion = "0.3"
+
+[[bench]]
+name = "simd"
+harness = false

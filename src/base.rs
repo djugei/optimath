@@ -4,17 +4,6 @@ use core::ops::*;
 // reference operations
 // need to have the Output = T on the Add for &T, otherwise you get infinite recursion
 
-impl<'a, const N: usize> Add for &'a Vector<f32, N> {
-	fn add(self, other: Self) -> Vector<f32, N> {
-		//todo: do some simd-stuff for specific types
-		self.inner
-			.iter()
-			.zip(other.inner.iter())
-			.map(|(s, o)| Add::add(s, o))
-			.collect()
-	}
-}
-
 impl<'a, T, const N: usize> Add for &'a Vector<T, N>
 where
 	&'a T: Add<Output = T>,
