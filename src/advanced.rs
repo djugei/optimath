@@ -43,5 +43,5 @@ fn matrix_multiply() {
 	let a: Matrix<f32, 2, 3> = Default::default();
 	let b: Matrix<f32, 3, 4> = Default::default();
 
-	let c: Matrix<f32, 2, 4> = a.matrix_multiply(&b);
+	let _c: Matrix<f32, 2, 4> = a.matrix_multiply(&b);
 }

@@ -116,9 +116,6 @@ where
 	}
 }
 
-#[cfg(test)]
-use crate::base::TESTLEN;
-
 #[test]
 fn transmute_bounds_1() {
 	let a: Matrix<f32, 1, 2> = Default::default();
@@ -129,7 +126,7 @@ fn transmute_bounds_1() {
 			assert_eq!(e, &0.);
 		}
 	}
-	let b = b.materialize();
+	let _b = b.materialize();
 }
 
 #[test]
@@ -142,5 +139,5 @@ fn transmute_bounds_2() {
 			assert_eq!(e, &0.);
 		}
 	}
-	let b = b.materialize();
+	let _b = b.materialize();
 }
