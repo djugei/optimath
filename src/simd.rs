@@ -9,7 +9,7 @@ use core::ops::Add;
 impl<'a, const N: usize> Add for &'a Vector<f32, N> {
 	fn add(self, other: Self) -> Vector<f32, N> {
 		use core::{
-			arch::x86_64::{_mm_add_ps, _mm_set_ps, _mm_store_ps},
+			arch::x86_64::{_mm_add_ps, _mm_loadu_ps, _mm_store_ps},
 			mem::size_of,
 		};
 
@@ -25,8 +25,8 @@ impl<'a, const N: usize> Add for &'a Vector<f32, N> {
 		let simd = simd_self
 			.zip(simd_other)
 			.map(|(s, o)| unsafe {
-				let s = _mm_set_ps(s[3], s[2], s[1], s[0]);
-				let o = _mm_set_ps(o[3], o[2], o[1], o[0]);
+				let s = _mm_loadu_ps(s.as_ptr());
+				let o = _mm_loadu_ps(o.as_ptr());
 				let res = _mm_add_ps(s, o);
 				let mut dst = [0.; 4];
 				_mm_store_ps(dst.as_mut_ptr(), res);
@@ -47,7 +47,7 @@ impl<'a, const N: usize> Add for &'a Vector<f32, N> {
 impl<'a, const N: usize> Add for &'a Vector<f32, N> {
 	fn add(self, other: Self) -> Vector<f32, N> {
 		use core::{
-			arch::x86_64::{_mm256_add_ps, _mm256_set_ps, _mm256_store_ps},
+			arch::x86_64::{_mm256_add_ps, _mm256_loadu_ps, _mm256_store_ps},
 			mem::size_of,
 		};
 
@@ -65,8 +65,8 @@ impl<'a, const N: usize> Add for &'a Vector<f32, N> {
 		let simd = simd_self
 			.zip(simd_other)
 			.map(|(s, o)| unsafe {
-				let s = _mm256_set_ps(s[7], s[6], s[5], s[4], s[3], s[2], s[1], s[0]);
-				let o = _mm256_set_ps(o[7], o[6], o[5], o[4], o[3], o[2], o[1], o[0]);
+				let s = _mm256_loadu_ps(s.as_ptr());
+				let o = _mm256_loadu_ps(o.as_ptr());
 				let res = _mm256_add_ps(s, o);
 				let mut dst = [0.; 8];
 				_mm256_store_ps(dst.as_mut_ptr(), res);

@@ -16,7 +16,7 @@ impl<'a, 'b> Add<&'b Ff32> for &'a Ff32 {
 	fn add(self, other: &'b Ff32) -> Ff32 { Ff32(self.0 + other.0) }
 }
 
-const TESTLEN: usize = 55;
+const TESTLEN: usize = 777;
 
 pub fn add(c: &mut Criterion) {
 	let a: Vector<f32, TESTLEN> = (0..TESTLEN).map(|x| x as f32).collect();
@@ -24,8 +24,8 @@ pub fn add(c: &mut Criterion) {
 
 	let mut group = c.benchmark_group("addition");
 	group.warm_up_time(core::time::Duration::from_millis(200));
-	group.measurement_time(core::time::Duration::from_secs(1));
-	group.sample_size(2000);
+	group.measurement_time(core::time::Duration::from_secs(2));
+	group.sample_size(250);
 
 	group.bench_function("f32 simd", |bench| {
 		bench.iter(|| black_box(&black_box(a) + &black_box(b)))
