@@ -1,0 +1,7 @@
+#!/bin/bash
+
+set -e 
+
+cargo fmt -- --check
+cargo test
+cargo sync-readme --check
