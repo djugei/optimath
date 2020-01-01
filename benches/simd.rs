@@ -27,16 +27,22 @@ pub fn add(c: &mut Criterion) {
 	group.measurement_time(core::time::Duration::from_secs(2));
 	group.sample_size(250);
 
-	group.bench_function("f32 simd", |bench| {
-		bench.iter(|| black_box(&black_box(a) + &black_box(b)))
+	group.bench_function("f32 simd", |bench| bench.iter(|| black_box(&a + &b)));
+
+	// this is currently rather slow, since for iteration the whole array is ptr.read()
+	// cause transmute doesn't work with const generics yet
+	group.bench_function("f32 noabstract", |bench| {
+		bench.iter(|| {
+			for (a, b) in a.into_iter().zip(b) {
+				black_box(a + b);
+			}
+		})
 	});
 
 	let a: Vector<Ff32, TESTLEN> = (0..TESTLEN).map(|x| Ff32(x as f32)).collect();
 	let b: Vector<Ff32, TESTLEN> = (1..{ TESTLEN + 1 }).map(|x| Ff32(x as f32)).collect();
 
-	group.bench_function("f32 scalar", |bench| {
-		bench.iter(|| black_box(&black_box(a) + &black_box(b)))
-	});
+	group.bench_function("f32 scalar", |bench| bench.iter(|| black_box(&a + &b)));
 }
 
 criterion_group!(sse3, add);
