@@ -6,11 +6,9 @@ edition = "2018"
 description = "Linear Algebra using const generics for no_std and specialization to enable SIMD."
 license = "Apache-2.0"
 repository = "https://github.com/djugei/optimath/"
+categories = ["science", "mathematics", "no-std", "data-structures", "algorithms"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
-#packed_simd="0.3"
 
 [dev-dependencies]
 criterion = "0.3"
