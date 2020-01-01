@@ -15,27 +15,6 @@ mod simd_impl;
 mod types;
 mod view;
 
-#[cfg(all(
-	target_arch = "x86_64",
-	target_feature = "sse",
-	not(target_feature = "avx")
-))]
-mod sse;
-
-#[cfg(all(target_arch = "x86_64", target_feature = "avx"))]
-mod avx;
-
-#[cfg(all(target_arch = "x86_64", target_feature = "avx"))]
-use avx as simd;
-
-#[cfg(all(
-	target_arch = "x86_64",
-	target_feature = "sse",
-	not(target_feature = "avx")
-))]
-use sse as simd;
-
-
 pub use types::{Matrix, Vector};
 pub use view::{TransposedMatrixView, VectorView};
 // add a type like StaticSizedIterator to make reasoning about dimensions easier
