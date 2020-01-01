@@ -1,3 +1,9 @@
+//! views on underlying vectors
+//!
+//! basically move trough the data at different strides and offsets
+//! currently only transposed matrices and contained flipped vectors
+//!
+//! the Index trait sucks hard
 use crate::types::{Matrix, Vector};
 use core::ops::*;
 

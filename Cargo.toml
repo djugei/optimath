@@ -1,9 +1,9 @@
 [package]
 name = "optimath"
-version = "0.0.0"
+version = "0.1.0"
 authors = ["djugei <ddjugei@gmail.com"]
 edition = "2018"
-description = "a no_std linear algebra library based on const generics, (later on with simd support)"
+description = "Linear Algebra using const generics for no_std and specialization to enable SIMD."
 license = "Apache-2.0"
 repository = "https://github.com/djugei/optimath/"
 

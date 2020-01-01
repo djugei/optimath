@@ -1,3 +1,6 @@
+//! non-element wise operations, like dot product and matrix multiplication
+//! as such they need to explicitly be called
+
 use crate::{
 	types::{Matrix, Vector},
 	view::{TransposedMatrixView, VectorView},
@@ -14,7 +17,7 @@ where
 	&'a T: core::ops::Mul<&'b T, Output = T>,
 	T: core::iter::Sum,
 {
-	pub fn matrix_multiply<const O: usize>(
+	pub default fn matrix_multiply<const O: usize>(
 		&'a self,
 		other: &'b Matrix<T, N, O>,
 	) -> Matrix<T, M, O> {
@@ -31,11 +34,19 @@ where
 			for (column, s) in (0..M).zip(sel) {
 				let s: VectorView<T, N, M> = s;
 				let field: &mut T = &mut col[column];
-				*field = (s * o).into_iter().sum()
+				*field = s.dot(o)
 			}
 		}
 		output
 	}
+}
+
+impl<'a, 'b, T: 'a + 'b, const M: usize, const N: usize> VectorView<'a, T, M, N>
+where
+	&'a T: core::ops::Mul<&'b T, Output = T>,
+	T: core::iter::Sum,
+{
+	pub default fn dot(self, other: &'b Vector<T, M>) -> T { (self * other).into_iter().sum() }
 }
 
 #[test]

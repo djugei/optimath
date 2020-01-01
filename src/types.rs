@@ -1,16 +1,29 @@
+//! this module contains some non-math specific methods around Vectors as std-lib arrays are sadly
+//! intentionally unusable above the size of 32. When that restriction gets removed most of this
+//! module gets obsolete
 use core::{
 	iter::{FromIterator, IntoIterator},
 	mem::MaybeUninit,
 	ops::*,
 };
 
+/// a const-sized vector of elements, supports all math operations that T does on an
+/// element-by-element basis.
+///
+/// can be iterated over using [.into_iter()](#method.into_iter) on Vector or &Vector
+/// can be constructed from iterators using collect().
 #[repr(transparent)]
 #[derive(Copy, Clone)]
 pub struct Vector<T, const N: usize> {
 	pub(crate) inner: [T; N],
 }
 
-/// Matrix is column-major
+/// Matrix is just a type alias for Vector<Vector>.
+///
+/// Supports some matrix specific maths operations, namely matrix multiplication and transpose
+///
+/// A Vector<Vector<Vector<...>>> can also be considered a matrix and as such has those operations
+/// defined too.
 pub type Matrix<T, const M: usize, const N: usize> = Vector<Vector<T, M>, N>;
 
 impl<T, const N: usize> Vector<T, N> {
@@ -115,5 +128,41 @@ impl<T: Default, const N: usize> Default for Vector<T, N> {
 		// all N elements have been set to their default
 		let inner = unsafe { x.assume_init() };
 		Vector { inner }
+	}
+}
+
+impl<T: PartialEq, const N: usize> PartialEq for Vector<T, N> {
+	fn eq(&self, other: &Self) -> bool { self.into_iter().zip(other).all(|(s, o)| s == o) }
+}
+
+impl<T: Eq, const N: usize> Eq for Vector<T, N> {}
+
+use core::fmt::Debug;
+impl<T: Debug, const N: usize> Debug for Vector<T, N> {
+	fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::result::Result<(), core::fmt::Error> {
+		f.write_str("Vector[")?;
+		for i in self {
+			i.fmt(f)?;
+			f.write_str(", ")?;
+		}
+		f.write_str("]")?;
+		Ok(())
+	}
+}
+
+use core::fmt::Display;
+impl<T: Display + Debug, const N: usize> Display for Vector<T, N> {
+	fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::result::Result<(), core::fmt::Error> {
+		if f.alternate() {
+			Debug::fmt(self, f)?;
+		} else {
+			f.write_str("Vector[\n")?;
+			for i in self {
+				Display::fmt(i, f)?;
+				f.write_str(",\n")?;
+			}
+			f.write_str("]")?;
+		}
+		Ok(())
 	}
 }
