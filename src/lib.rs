@@ -6,6 +6,7 @@
 #![feature(maybe_uninit_extra)]
 //#![feature(avx512_target_feature)]
 #![feature(associated_type_defaults)]
+#![feature(fixed_size_array)]
 
 //! # Optimath
 //!
@@ -76,6 +77,10 @@
 //! * Basic linear algebra operations
 //! * A sturdy design for future improvements
 //!
+//! ### 0.2.0 (current-dev)
+//! * serde support
+//! * [ ] rand support
+//!
 //! ### 0.2.0
 //! * [ ] working SIMD on Vectors (blocked on rust compiler bug(s))
 //! * [ ] additional operations on Vectors and Matrixes (taking feature requests!)
@@ -109,6 +114,9 @@ mod base;
 mod types;
 mod view;
 
+#[cfg(feature = "serde")]
+mod serialize;
+
 /* SIMD is currently a slowdown
  * because loading stuff into simd-format and unloading afterwards is more overhead than speed-up
  * the solution would be to use simd-format as memory-layout but rust currently has some compiler
@@ -125,7 +133,6 @@ mod avx;
 
 mod layout;
 */
-
 pub use types::{Matrix, Vector};
 pub use view::{TransposedMatrixView, VectorView};
 // add a type like StaticSizedIterator to make reasoning about dimensions easier/enable

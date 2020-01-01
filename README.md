@@ -69,6 +69,10 @@ them.
 * Basic linear algebra operations
 * A sturdy design for future improvements
 
+### 0.2.0 (current-dev)
+* serde support
+* [ ] rand support
+
 ### 0.2.0
 * [ ] working SIMD on Vectors (blocked on rust compiler bug(s))
 * [ ] additional operations on Vectors and Matrixes (taking feature requests!)
