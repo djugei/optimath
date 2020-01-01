@@ -28,6 +28,7 @@ impl<T> SimdRepr for T {
 	default type Unpacked = [Self; 1];
 }
 
+#[repr(transparent)]
 pub struct Vecc<T, const N: usize> {
 	i: Inner<
 		T,
@@ -37,14 +38,40 @@ pub struct Vecc<T, const N: usize> {
 	>,
 }
 
-/* this is an ICE :(
 impl<T, const N: usize> FromIterator<T> for Vecc<T, N> {
-	fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
+	/// this is todo!() as any implementation i tried leads to ICE
+	fn from_iter<I: IntoIterator<Item = T>>(_iter: I) -> Self {
+		/* ICE, probably can't resolve the type??
 		let inner = FromIterator::from_iter(iter);
 		Vecc { i: inner }
+				*/
+		/*
+		let inner = Inner::<
+			T,
+			{ N / <T as SimdRepr>::NUM },
+			{ N / <T as SimdRepr>::NUM },
+			{ (N / <T as SimdRepr>::NUM) * N },
+		>::from_iter(iter);
+		// can't unify the expressions, so trying to transmute, lul
+				// still leads to ice tho
+		let inner = unsafe { core::mem::transmute(inner) };
+		Vecc { i: inner }
+				*/
+		/* even more ice! yay
+		let inner = Inner::<
+			T,
+			{ N / <T as SimdRepr>::NUM },
+			{ N / <T as SimdRepr>::NUM },
+			{ (N / <T as SimdRepr>::NUM) * N },
+		>::from_iter(iter);
+
+		let inner_ptr = &mut inner as *mut _ as *mut Self;
+
+		unsafe { inner_ptr.read() }
+				*/
+		todo!()
 	}
 }
-*/
 
 pub(crate) struct Inner<T, const CHUNKS: usize, const SPILL: usize, const IN_BASE: usize> {
 	base: [[<T as SimdRepr>::Repr; <T as SimdRepr>::NUM]; CHUNKS],
