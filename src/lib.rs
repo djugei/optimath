@@ -79,7 +79,7 @@
 //!
 //! ### 0.2.0 (current-dev)
 //! * serde support
-//! * [ ] rand support
+//! * rand support
 //!
 //! ### 0.2.0
 //! * [ ] working SIMD on Vectors (blocked on rust compiler bug(s))
@@ -116,6 +116,9 @@ mod view;
 
 #[cfg(feature = "serde")]
 mod serialize;
+
+#[cfg(feature = "rand")]
+mod random;
 
 /* SIMD is currently a slowdown
  * because loading stuff into simd-format and unloading afterwards is more overhead than speed-up

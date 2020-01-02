@@ -11,7 +11,7 @@ categories = ["science", "mathematics", "no-std", "data-structures", "algorithms
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [features]
-default = ["serde"]
+default = ["serde", "rand"]
 alloc = []
 
 
@@ -23,6 +23,7 @@ rand = { version = "0.7", default-features = false, optional = true }
 [dev-dependencies]
 criterion = "0.3"
 bincode = "1.2"
+rand = { version = "0.7"}
 
 [[bench]]
 name = "simd"

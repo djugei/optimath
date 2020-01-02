@@ -71,7 +71,7 @@ them.
 
 ### 0.2.0 (current-dev)
 * serde support
-* [ ] rand support
+* rand support
 
 ### 0.2.0
 * [ ] working SIMD on Vectors (blocked on rust compiler bug(s))

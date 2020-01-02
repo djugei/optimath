@@ -1,6 +1,7 @@
 use core::ops::Add;
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use optimath::Vector;
+use rand::{thread_rng, Rng};
 
 #[derive(Copy, Clone)]
 #[repr(transparent)]
@@ -19,8 +20,9 @@ impl<'a, 'b> Add<&'b Ff32> for &'a Ff32 {
 const TESTLEN: usize = 250;
 
 pub fn add(c: &mut Criterion) {
-	let a: Vector<f32, TESTLEN> = (0..TESTLEN).map(|x| x as f32).collect();
-	let b: Vector<f32, TESTLEN> = (1..{ TESTLEN + 1 }).map(|x| x as f32).collect();
+	let mut rng = thread_rng();
+	let a: Vector<f32, TESTLEN> = rng.gen();
+	let b: Vector<f32, TESTLEN> = rng.gen();
 
 	let mut group = c.benchmark_group("addition");
 	group.warm_up_time(core::time::Duration::from_millis(200));
@@ -39,42 +41,45 @@ pub fn add(c: &mut Criterion) {
 		})
 	});
 
-	let a: Vector<Ff32, TESTLEN> = (0..TESTLEN).map(|x| Ff32(x as f32)).collect();
-	let b: Vector<Ff32, TESTLEN> = (1..{ TESTLEN + 1 }).map(|x| Ff32(x as f32)).collect();
+	let a: Vector<f32, TESTLEN> = rng.gen();
+	let b: Vector<f32, TESTLEN> = rng.gen();
+	let a: Vector<Ff32, TESTLEN> = a.into_iter().map(|f: f32| Ff32(f)).collect();
+	let b: Vector<Ff32, TESTLEN> = b.into_iter().map(|f: f32| Ff32(f)).collect();
 
 	group.bench_function("f32 scalar", |bench| bench.iter(|| black_box(&a + &b)));
 }
 
 pub fn mul(c: &mut Criterion) {
+	let mut rng = thread_rng();
 	let mut group = c.benchmark_group("sizes");
 	group.warm_up_time(core::time::Duration::from_millis(200));
 	group.measurement_time(core::time::Duration::from_secs(1));
 	group.sample_size(500);
 
-	let a: Vector<u8, TESTLEN> = (0..TESTLEN).map(|x| x as u8).collect();
-	let b: Vector<u8, TESTLEN> = (1..{ TESTLEN + 1 }).map(|x| x as u8).collect();
+	let a: Vector<u8, TESTLEN> = rng.gen();
+	let b: Vector<u8, TESTLEN> = rng.gen();
 	group.bench_function("u8", |bench| bench.iter(|| black_box(&a * &b)));
 	group.bench_function("u8 noabstract", |bench| {
 		bench.iter(|| {
 			for (a, b) in a.into_iter().zip(b) {
-				black_box(a + b);
+				black_box(a * b);
 			}
 		})
 	});
 
-	let a: Vector<u16, TESTLEN> = (0..TESTLEN).map(|x| x as u16).collect();
-	let b: Vector<u16, TESTLEN> = (1..{ TESTLEN + 1 }).map(|x| x as u16).collect();
+	let a: Vector<u16, TESTLEN> = rng.gen();
+	let b: Vector<u16, TESTLEN> = rng.gen();
 	group.bench_function("u16", |bench| bench.iter(|| black_box(&a * &b)));
 	group.bench_function("u16 noabstract", |bench| {
 		bench.iter(|| {
 			for (a, b) in a.into_iter().zip(b) {
-				black_box(a + b);
+				black_box(a * b);
 			}
 		})
 	});
 
-	let a: Vector<u32, TESTLEN> = (0..TESTLEN).map(|x| x as u32).collect();
-	let b: Vector<u32, TESTLEN> = (1..{ TESTLEN + 1 }).map(|x| x as u32).collect();
+	let a: Vector<u32, TESTLEN> = rng.gen();
+	let b: Vector<u32, TESTLEN> = rng.gen();
 	group.bench_function("u32", |bench| bench.iter(|| black_box(&a * &b)));
 	group.bench_function("u32 noabstract", |bench| {
 		bench.iter(|| {
@@ -84,8 +89,8 @@ pub fn mul(c: &mut Criterion) {
 		})
 	});
 
-	let a: Vector<u64, TESTLEN> = (0..TESTLEN).map(|x| x as u64).collect();
-	let b: Vector<u64, TESTLEN> = (1..{ TESTLEN + 1 }).map(|x| x as u64).collect();
+	let a: Vector<u64, TESTLEN> = rng.gen();
+	let b: Vector<u64, TESTLEN> = rng.gen();
 	group.bench_function("u64", |bench| bench.iter(|| black_box(&a * &b)));
 	group.bench_function("u64 noabstract", |bench| {
 		bench.iter(|| {
@@ -95,8 +100,8 @@ pub fn mul(c: &mut Criterion) {
 		})
 	});
 
-	let a: Vector<u128, TESTLEN> = (0..TESTLEN).map(|x| x as u128).collect();
-	let b: Vector<u128, TESTLEN> = (1..{ TESTLEN + 1 }).map(|x| x as u128).collect();
+	let a: Vector<u128, TESTLEN> = rng.gen();
+	let b: Vector<u128, TESTLEN> = rng.gen();
 	group.bench_function("u128", |bench| bench.iter(|| black_box(&a * &b)));
 	group.bench_function("u128 noabstract", |bench| {
 		bench.iter(|| {
@@ -107,5 +112,39 @@ pub fn mul(c: &mut Criterion) {
 	});
 }
 
-criterion_group!(sse3, add, mul);
+const BIG: usize = 40_001;
+
+pub fn create(c: &mut Criterion) {
+	use core::mem::MaybeUninit;
+	let mut group = c.benchmark_group("create");
+	group.warm_up_time(core::time::Duration::from_millis(200));
+	group.measurement_time(core::time::Duration::from_secs(2));
+	group.sample_size(250);
+
+	group.bench_function("uninit", |bench| {
+		bench.iter(|| {
+			black_box({
+				let b: MaybeUninit<[f32; BIG]> = MaybeUninit::uninit();
+				b
+			})
+		})
+	});
+
+	group.bench_function("write", |bench| {
+		bench.iter(|| {
+			black_box({
+				let mut b: MaybeUninit<[f32; BIG]> = MaybeUninit::uninit();
+				let b_ptr = b.as_mut_ptr() as *mut f32;
+				for i in 0..BIG {
+					unsafe {
+						b_ptr.add(i).write(0.);
+					}
+				}
+				unsafe { b.assume_init() }
+			})
+		})
+	});
+}
+
+criterion_group!(sse3, add, mul, create);
 criterion_main!(sse3);
