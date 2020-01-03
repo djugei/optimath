@@ -3,112 +3,60 @@ use core::ops::*;
 
 // reference operations
 // need to have the Output = T on the Add for &T, otherwise you get infinite recursion
-
-impl<'a, T, const N: usize> Add for &'a Vector<T, N>
-where
-	&'a T: Add<Output = T>,
-{
-	type Output = Vector<T, N>;
-	default fn add(self, other: Self) -> Vector<T, N> {
-		self.inner
-			.iter()
-			.zip(other.inner.iter())
-			.map(|(s, o)| Add::add(s, o))
-			.collect()
-	}
+macro_rules! impl_op {
+	( $op:tt, $fn:ident, $basetype:ty, $( $generics:tt),  *; $( $cons:tt $constype:ty ), * ) => {
+		impl<'a, 'b, $( $generics), *, $( const $cons : $constype), *> $op <&'b $basetype> for &'a $basetype
+		where
+			&'a T: $op<&'b T, Output = T>,
+		{
+			type Output = $basetype;
+			default fn $fn(self, other: &'b $basetype) -> $basetype {
+				self.into_iter()
+					.zip(other)
+					.map(|(s, o)| $op::$fn(s, o))
+					.collect()
+			}
+		}
+	};
 }
 
-impl<'a, T, const N: usize> Sub for &'a Vector<T, N>
-where
-	&'a T: Sub<Output = T>,
-{
-	type Output = Vector<T, N>;
-	fn sub(self, other: Self) -> Vector<T, N> {
-		self.inner
-			.iter()
-			.zip(other.inner.iter())
-			.map(|(s, o)| Sub::sub(s, o))
-			.collect()
-	}
-}
-
-impl<'a, T, const N: usize> Mul for &'a Vector<T, N>
-where
-	&'a T: Mul<Output = T>,
-{
-	type Output = Vector<T, N>;
-	fn mul(self, other: Self) -> Vector<T, N> {
-		self.inner
-			.iter()
-			.zip(other.inner.iter())
-			.map(|(s, o)| Mul::mul(s, o))
-			.collect()
-	}
-}
-
-impl<'a, T, const N: usize> Div for &'a Vector<T, N>
-where
-	&'a T: Div<Output = T>,
-{
-	type Output = Vector<T, N>;
-	fn div(self, other: Self) -> Vector<T, N> {
-		self.inner
-			.iter()
-			.zip(other.inner.iter())
-			.map(|(s, o)| Div::div(s, o))
-			.collect()
-	}
+macro_rules! maths {
+	( $basetype:ty, $( $generics:tt),  *; $( const $cons:tt : $constype:ty ), * ) => {
+            impl_op!(Add, add, $basetype, $( $generics),  *; $( $cons $constype ), * );
+            impl_op!(Sub, sub, $basetype, $( $generics),  *; $( $cons $constype ), * );
+            impl_op!(Mul, mul, $basetype, $( $generics),  *; $( $cons $constype ), * );
+            impl_op!(Div, div, $basetype, $( $generics),  *; $( $cons $constype ), * );
+        }
 }
 
 // assigning operations
-
-impl<'a, T, const N: usize> AddAssign<&'a Vector<T, N>> for Vector<T, N>
-where
-	T: AddAssign<&'a T>,
-{
-	fn add_assign(&mut self, other: &'a Vector<T, N>) {
-		let iter = self.inner.iter_mut().zip(other.inner.iter());
-		for (s, o) in iter {
-			*s += o
+macro_rules! impl_assign_op {
+	( $op:tt, $fn:ident, $basetype:ty, $( $generics:tt),  *; $( $cons:tt $constype:ty ), * ) => {
+		impl<'a, $( $generics), *, $( const $cons : $constype), *> $op <&'a $basetype> for $basetype
+		where
+			T: $op<&'a T>,
+		{
+			fn $fn(&mut self, other: &'a $basetype) {
+				let iter = self.inner.iter_mut().zip(other);
+				for (s, o) in iter {
+					$op::$fn(s, o);
+				}
+			}
 		}
-	}
+	};
 }
 
-impl<'a, T, const N: usize> SubAssign<&'a Vector<T, N>> for Vector<T, N>
-where
-	T: SubAssign<&'a T>,
-{
-	fn sub_assign(&mut self, other: &'a Vector<T, N>) {
-		let iter = self.inner.iter_mut().zip(other.inner.iter());
-		for (s, o) in iter {
-			*s -= o
-		}
-	}
+macro_rules! assign_maths {
+	( $basetype:ty, $( $generics:tt),  *; $( const $cons:tt : $constype:ty ), * ) => {
+            impl_assign_op!(AddAssign, add_assign, $basetype, $( $generics),  *; $( $cons $constype ), * );
+            impl_assign_op!(SubAssign, sub_assign, $basetype, $( $generics),  *; $( $cons $constype ), * );
+            impl_assign_op!(MulAssign, mul_assign, $basetype, $( $generics),  *; $( $cons $constype ), * );
+            impl_assign_op!(DivAssign, div_assign, $basetype, $( $generics),  *; $( $cons $constype ), * );
+        }
 }
 
-impl<'a, T, const N: usize> MulAssign<&'a Vector<T, N>> for Vector<T, N>
-where
-	T: MulAssign<&'a T>,
-{
-	fn mul_assign(&mut self, other: &'a Vector<T, N>) {
-		let iter = self.inner.iter_mut().zip(other.inner.iter());
-		for (s, o) in iter {
-			*s *= o
-		}
-	}
-}
-
-impl<'a, T, const N: usize> DivAssign<&'a Vector<T, N>> for Vector<T, N>
-where
-	T: DivAssign<&'a T>,
-{
-	fn div_assign(&mut self, other: &'a Vector<T, N>) {
-		let iter = self.inner.iter_mut().zip(other.inner.iter());
-		for (s, o) in iter {
-			*s /= o
-		}
-	}
-}
+maths!(Vector<T, N>, T; const N: usize);
+assign_maths!(Vector<T, N>, T; const N: usize);
 
 #[cfg(test)]
 pub(crate) const TESTLEN: usize = 777usize;
