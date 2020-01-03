@@ -62,8 +62,10 @@ impl<'de, T: Deserialize<'de>, const N: usize> Visitor<'de> for ElementVisitor<T
 fn ser_de_test() {
 	use crate::Matrix;
 	use core::array::FixedSizeArray;
+	use rand::{thread_rng, Rng};
+	let mut rng = thread_rng();
 
-	let matrix: Matrix<u32, 20, 40> = (0..40).map(|r| (0..20).map(|c| r * c).collect()).collect();
+	let matrix: Matrix<u32, 20, 40> = rng.gen();
 
 	let mut buf: [u8; 20 * 40 * 4] = [0; 20 * 40 * 4];
 	bincode::serialize_into(buf.as_mut_slice(), &matrix).unwrap();

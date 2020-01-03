@@ -51,8 +51,11 @@ where
 
 #[test]
 fn matrix_multiply() {
-	let a: Matrix<f32, 2, 3> = Default::default();
-	let b: Matrix<f32, 3, 4> = Default::default();
+	use rand::{thread_rng, Rng};
+	let mut rng = thread_rng();
+
+	let a: Matrix<f32, 2, 3> = rng.gen();
+	let b: Matrix<f32, 3, 4> = rng.gen();
 
 	let _c: Matrix<f32, 2, 4> = a.matrix_multiply(&b);
 }

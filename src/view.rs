@@ -124,26 +124,11 @@ where
 
 #[test]
 fn transmute_bounds_1() {
-	let a: Matrix<f32, 1, 2> = Default::default();
-	let b = a.transpose();
+	use rand::{thread_rng, Rng};
+	let mut rng = thread_rng();
+	let a: Matrix<f32, 1, 2> = rng.gen();
+	let b = a.transpose().materialize();
+	let a2 = b.transpose().materialize();
 
-	for r in b {
-		for e in r {
-			assert_eq!(e, &0.);
-		}
-	}
-	let _b = b.materialize();
-}
-
-#[test]
-fn transmute_bounds_2() {
-	let a: Matrix<f32, 2, 1> = Default::default();
-	let b = a.transpose();
-
-	for r in b {
-		for e in r {
-			assert_eq!(e, &0.);
-		}
-	}
-	let _b = b.materialize();
+	assert_eq!(a, a2);
 }

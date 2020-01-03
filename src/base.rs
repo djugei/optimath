@@ -71,8 +71,10 @@ fn default_is_default() {
 
 #[test]
 fn operations() {
-	let a: Vector<f32, TESTLEN> = (0..TESTLEN).map(|x| x as f32).collect();
-	let b: Vector<f32, TESTLEN> = (1..{ TESTLEN + 1 }).map(|x| x as f32).collect();
+	use rand::{thread_rng, Rng};
+	let mut rng = thread_rng();
+	let a: Vector<f32, TESTLEN> = rng.gen();
+	let b: Vector<f32, TESTLEN> = rng.gen();
 
 	let add = &a + &b;
 	let sub = &a - &b;
@@ -89,8 +91,10 @@ fn operations() {
 
 #[test]
 fn assignment_operations() {
-	let a: Vector<f32, TESTLEN> = (0..TESTLEN).map(|x| x as f32).collect();
-	let b: Vector<f32, TESTLEN> = (1..{ TESTLEN + 1 }).map(|x| x as f32).collect();
+	use rand::{thread_rng, Rng};
+	let mut rng = thread_rng();
+	let a: Vector<f32, TESTLEN> = rng.gen();
+	let b: Vector<f32, TESTLEN> = rng.gen();
 
 	let mut add = a.clone();
 	add += &b;
