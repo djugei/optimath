@@ -4,8 +4,7 @@
 //! currently only transposed matrices and contained flipped vectors
 //!
 //! the Index trait sucks hard
-use crate::types::{Matrix, Vector};
-use core::ops::*;
+use crate::types::Matrix;
 
 #[derive(Clone, Copy)]
 pub struct TransposedMatrixView<'a, T, const M: usize, const N: usize> {
@@ -65,8 +64,8 @@ impl<'a, T, const M: usize, const N: usize> Iterator for TransIter<'a, T, M, N> 
 
 #[derive(Copy, Clone)]
 pub struct VectorView<'a, T, const M: usize, const N: usize> {
-	row: usize,
-	matrix: &'a Matrix<T, N, M>,
+	pub(crate) row: usize,
+	pub(crate) matrix: &'a Matrix<T, N, M>,
 }
 
 impl<'a, T, const M: usize, const N: usize> IntoIterator for VectorView<'a, T, M, N> {
@@ -93,32 +92,6 @@ impl<'a, T, const M: usize, const N: usize> Iterator for ViewIter<'a, T, M, N> {
 			self.pos += 1;
 			Some(element)
 		}
-	}
-}
-
-impl<'a, 'b, T, const M: usize, const N: usize> Mul<&'b Vector<T, M>> for VectorView<'a, T, M, N>
-where
-	&'a T: Mul<&'b T, Output = T>,
-{
-	type Output = Vector<T, M>;
-	fn mul(self, other: &'b Vector<T, M>) -> Vector<T, M> {
-		self.into_iter()
-			.zip(other.into_iter())
-			.map(|(s, o)| s * o)
-			.collect()
-	}
-}
-
-impl<'a, 'b, T, const M: usize, const N: usize> Mul<VectorView<'b, T, M, N>> for &'a Vector<T, N>
-where
-	&'a T: Mul<&'b T, Output = T>,
-{
-	type Output = Vector<T, N>;
-	fn mul(self, other: VectorView<'b, T, M, N>) -> Vector<T, N> {
-		self.into_iter()
-			.zip(other.into_iter())
-			.map(|(s, o)| Mul::mul(s, o))
-			.collect()
 	}
 }
 

@@ -1,32 +1,37 @@
-use crate::types::Vector;
-use core::ops::*;
+use crate::{consts::ConstIndex, types::Vector};
+use core::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
 // reference operations
 // need to have the Output = T on the Add for &T, otherwise you get infinite recursion
+
+// im not good with macro hygene, but foring the size to be called N and the type to be called T
+// seems wrong to me and like its breaking hygene..
 macro_rules! impl_op {
 	( $op:tt, $fn:ident, $basetype:ty, $( $generics:tt),  *; $( $cons:tt $constype:ty ), * ) => {
-		impl<'a, 'b, $( $generics), *, $( const $cons : $constype), *> $op <&'b $basetype> for &'a $basetype
-		where
-			&'a T: $op<&'b T, Output = T>,
-		{
-			type Output = $basetype;
-			default fn $fn(self, other: &'b $basetype) -> $basetype {
-				self.into_iter()
-					.zip(other)
-					.map(|(s, o)| $op::$fn(s, o))
-					.collect()
-			}
-		}
+		impl<'a, 'b, $( $generics), *, B: 'b, $( const $cons : $constype), *> $op <B> for $basetype
+                where
+                        &'a T: $op<&'b T, Output = T>,
+                        B: ConstIndex<&'b T, N> + Copy + Clone,
+                        T: 'a + 'b,
+                {
+                        type Output = Vector<T, N>;
+                        default fn $fn(self, other: B) -> Vector<T, N> {
+                                self.into_iter()
+                                        .enumerate()
+                                        .map(|(i, s)| $op::$fn(s, other.i(i)))
+                                        .collect()
+                        }
+                }
 	};
 }
 
 macro_rules! maths {
-	( $basetype:ty, $( $generics:tt),  *; $( const $cons:tt : $constype:ty ), * ) => {
+	( $basetype:ty, $( $generics:tt), *; $( const $cons:tt : $constype:ty ), * ) => {
             impl_op!(Add, add, $basetype, $( $generics),  *; $( $cons $constype ), * );
             impl_op!(Sub, sub, $basetype, $( $generics),  *; $( $cons $constype ), * );
             impl_op!(Mul, mul, $basetype, $( $generics),  *; $( $cons $constype ), * );
             impl_op!(Div, div, $basetype, $( $generics),  *; $( $cons $constype ), * );
-        }
+	};
 }
 
 // assigning operations
@@ -43,6 +48,20 @@ macro_rules! impl_assign_op {
 				}
 			}
 		}
+
+		impl<'a, 'b, $( $generics), *, B: 'b, $( const $cons : $constype), *> $op <B> for $basetype
+                where
+                        T: $op<&'b T>,
+                        B: ConstIndex<&'b T, N> + Copy + Clone,
+                        T: 'a + 'b,
+                {
+                        default fn $fn(&mut self, other: B) {
+				let iter = self.inner.iter_mut().enumerate();
+				for (i, s) in iter {
+					$op::$fn(s, other.i(i));
+				}
+                        }
+                }
 	};
 }
 
@@ -55,7 +74,11 @@ macro_rules! assign_maths {
         }
 }
 
-maths!(Vector<T, N>, T; const N: usize);
+maths!(&'a Vector<T, N>, T; const N: usize);
+
+use crate::VectorView;
+maths!(VectorView<'a, T, N, M>, T; const N: usize, const M: usize);
+
 assign_maths!(Vector<T, N>, T; const N: usize);
 
 #[cfg(test)]
