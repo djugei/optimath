@@ -28,7 +28,6 @@ unsafe impl<'a, T, const M: usize, const N: usize> ConstIndex<&'a T, N>
 {
 	fn i(self, index: usize) -> &'a T {
 		let row = &self.matrix[index];
-		let element = &row[self.row];
-		element
+		&row[self.row]
 	}
 }

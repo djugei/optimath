@@ -7,7 +7,7 @@ use crate::{
 };
 
 impl<T, const M: usize, const N: usize> Matrix<T, M, N> {
-	pub fn transpose<'a>(&'a self) -> TransposedMatrixView<'a, T, N, M> {
+	pub fn transpose(&self) -> TransposedMatrixView<'_, T, N, M> {
 		TransposedMatrixView { matrix: self }
 	}
 }

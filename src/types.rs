@@ -54,7 +54,9 @@ impl<T, const N: usize> FromIterator<T> for Vector<T, N> {
 				panic!("not enough elements");
 			}
 		}
-		iter.next().map(|_| panic!("too many elements"));
+		if iter.next().is_some() {
+			panic!("too many elements");
+		}
 		let inner = unsafe { inner.assume_init() };
 		Self { inner }
 	}
