@@ -31,3 +31,91 @@ unsafe impl<'a, T, const M: usize, const N: usize> ConstIndex<&'a T, N>
 		&row[self.row]
 	}
 }
+
+pub struct ConstIterator<T, C: ConstIndex<T, N>, const N: usize> {
+	pub(crate) pos: usize,
+	pub(crate) content: C,
+	pub(crate) marker: core::marker::PhantomData<T>,
+}
+
+impl<T, C: ConstIndex<T, N> + Copy, const N: usize> Iterator for ConstIterator<T, C, N> {
+	type Item = T;
+	fn next(&mut self) -> Option<T> {
+		if self.pos < N {
+			let ret = self.content.i(self.pos);
+			self.pos += 1;
+			Some(ret)
+		} else {
+			None
+		}
+	}
+}
+
+/* im reasonably sure this could be implemented with GAT
+ * right now it tells me that T and N are unconstrained, because C is not generic over them
+ * this is exactly what GAT provides
+impl<C, T, const N: usize> IntoIterator for C
+where
+	C: ConstIndex<T, N> + Copy,
+{
+	type Item = T;
+	type IntoIter = ConstIterator<T, Self, N>;
+
+	fn into_iter(self) -> Self::IntoIter { ConstIterator { pos: 0, content: self, marker: Default::default() }
+}
+*/
+
+impl<C, T, const N: usize> From<C> for ConstIterator<T, C, N>
+where
+	C: ConstIndex<T, N>,
+{
+	fn from(content: C) -> Self {
+		Self {
+			pos: 0,
+			content,
+			marker: Default::default(),
+		}
+	}
+}
+
+/* this produces some weird error about mismatching lifetimes
+ *   note: expected  consts::ConstIndex<&'a mut T, N>
+ *            found  consts::ConstIndex<&'a mut T, N>
+ *  which, at least to me, seem to be the exact same thing
+pub struct ConstIteratorMut<'a, T, C, const N: usize> {
+	pos: usize,
+	content: &'a mut C,
+	marker: core::marker::PhantomData<T>,
+}
+
+impl<'a, T: 'a, C, const N: usize> Iterator for ConstIteratorMut<'a, T, C, N>
+where
+	&'a mut C: ConstIndex<&'a mut T, N>,
+{
+	type Item = &'a mut T;
+	fn next(&mut self) -> Option<&mut T> {
+		if self.pos < N {
+			let ret = self.content.i(self.pos);
+			self.pos += 1;
+			Some(ret)
+		} else {
+			None
+		}
+	}
+}
+*/
+
+#[test]
+fn const_iter() {
+	use crate::Vector;
+	use rand::{thread_rng, Rng};
+	let mut rng = thread_rng();
+	let a: Vector<f32, 40> = rng.gen();
+	let iter = ConstIterator {
+		pos: 0,
+		content: &a,
+		marker: Default::default(),
+	};
+
+	let _s: f32 = iter.sum();
+}

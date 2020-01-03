@@ -111,11 +111,13 @@ impl<T, const N: usize> IntoIterator for Vector<T, N> {
 	fn into_iter(self) -> Self::IntoIter { IntoIter::new(self) }
 }
 
+use crate::consts::ConstIterator;
+
 impl<'a, T, const N: usize> IntoIterator for &'a Vector<T, N> {
 	type Item = &'a T;
-	type IntoIter = core::slice::Iter<'a, T>;
+	type IntoIter = ConstIterator<&'a T, &'a Vector<T, N>, N>;
 
-	fn into_iter(self) -> Self::IntoIter { self.inner.iter() }
+	fn into_iter(self) -> Self::IntoIter { self.into() }
 }
 
 impl<T: Default, const N: usize> Default for Vector<T, N> {
