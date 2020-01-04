@@ -25,11 +25,9 @@ pub fn add(c: &mut Criterion) {
 	let b: Vector<f32, TESTLEN> = rng.gen();
 
 	// there seem to be two "modes" hit on optimization
-	// currently "f32 simd" hits the good one
+	// currently "f32 simd" and "f32 inline" hit the good one
 	// and "f32 noabstract" and "f32 scalar" hit the bad one
-	// good one takes 180, bad one 320
-	// "f32 inline" takes the middle ground at 250 even though it should be identical to
-	// "f32 simd"
+	// good one takes 180ns, bad one 320ns
 	// can't inspect the asm of this specific benchmark though as the compiler just locks up
 	// and eats 30 GB ram.
 	// asm of benching::add and benching::internal_add seem identical and very well vectorized
