@@ -81,26 +81,29 @@
 //! * serde support
 //! * rand support
 //!
-//! ### 0.2.0
-//! * [ ] working SIMD on Vectors (blocked on rust compiler bug(s))
-//! * [ ] additional operations on Vectors and Matrixes (taking feature requests!)
-//!
 //! ### 0.3.0
+//! * [ ] rearchitecture a bit so Vectors are generic over containers
 //! * [ ] strided iteration over matrices
 //! * [ ] windows-function
 //!
 //! ### 0.4.0
+//! * [ ] working SIMD on Vectors (blocked on rust compiler bug(s), but auto-vectorization works
+//! super well)
+//! * [ ] additional operations on Vectors and Matrixes (taking feature requests!)
+//!
+//!
+//! ### 0.5.0
 //! * [ ] interaction with dynamically sized vectors
 //!     * [ ] widows-function on dynamically sized vectors
 //!
-//! ### 0.5.0
+//! ### 0.6.0
 //! * [ ] multi-threading for really large workloads
 //!
-//! ### 0.6.0
+//! ### 0.7.0
 //! * [ ] full specialized SIMD for sse, avx and avx512
 //! * [ ] full SIMD between Vectors, dynamic Vectors and vector views
 //!
-//! ### 0.7.0
+//! ### 0.8.0
 //! * [ ] a BLAS compatible interface, including a C-interface. Probably in a different crate based
 //! on this
 //! * [ ] have 2 contributors :) come join the fun and headache about weird compiler bugs and
@@ -109,10 +112,18 @@
 //! ### 1.0.0
 //! * [ ] been used/tested in other peoples crates and considered usable
 
-mod advanced;
-mod base;
-mod consts;
+// turn vector into a transparent wrapper struct that can contain anything
+// it can then contain for example: straight data, &[T] Vec<Vector<T>> or Vector<Vec<T>>
+// potentially also views of vectors again?
+// then implement stuff like matrix-multiply conditionally on const-ness
 mod types;
+// basic element-wise functions
+mod base;
+// maths-stuff, dot product, matrix multiply etc
+mod advanced;
+// a helper trait for compile time known sizes
+mod consts;
+// views on underlying vectors
 mod view;
 
 #[cfg(feature = "serde")]
@@ -120,6 +131,12 @@ mod serialize;
 
 #[cfg(feature = "rand")]
 mod random;
+
+#[cfg(feature = "alloc")]
+mod dynvec;
+
+#[doc(hidden)]
+pub mod benching;
 
 /* SIMD is currently a slowdown
  * because loading stuff into simd-format and unloading afterwards is more overhead than speed-up
@@ -137,7 +154,8 @@ mod avx;
 
 mod layout;
 */
-pub use types::{Matrix, Vector};
+pub use consts::ConstIndex;
+pub use types::{Matrix, Stupidity, Vector};
 pub use view::{TransposedMatrixView, VectorView};
 // add a type like StaticSizedIterator to make reasoning about dimensions easier/enable
 // optimizations

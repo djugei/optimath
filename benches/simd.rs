@@ -24,21 +24,28 @@ pub fn add(c: &mut Criterion) {
 	let a: Vector<f32, TESTLEN> = rng.gen();
 	let b: Vector<f32, TESTLEN> = rng.gen();
 
+	// there seem to be two "modes" hit on optimization
+	// currently "f32 simd" hits the good one
+	// and "f32 noabstract" and "f32 scalar" hit the bad one
+	// good one takes 180, bad one 320
+	// "f32 inline" takes the middle ground at 250 even though it should be identical to
+	// "f32 simd"
+	// can't inspect the asm of this specific benchmark though as the compiler just locks up
+	// and eats 30 GB ram.
+	// asm of benching::add and benching::internal_add seem identical and very well vectorized
+	// so im assuming this a benchmarking problem
 	let mut group = c.benchmark_group("addition");
 	group.warm_up_time(core::time::Duration::from_millis(200));
 	group.measurement_time(core::time::Duration::from_secs(2));
 	group.sample_size(250);
 
-	group.bench_function("f32 simd", |bench| bench.iter(|| black_box(&a + &b)));
+	group.bench_function("f32 inline", |bench| bench.iter(|| &a + &b));
+	group.bench_function("f32 simd", |bench| {
+		bench.iter(|| optimath::benching::add(&a, &b))
+	});
 
-	// this is currently rather slow, since for iteration the whole array is ptr.read()
-	// cause transmute doesn't work with const generics yet
 	group.bench_function("f32 noabstract", |bench| {
-		bench.iter(|| {
-			for (a, b) in a.into_iter().zip(b) {
-				black_box(a + b);
-			}
-		})
+		bench.iter(|| black_box(optimath::benching::internal_add(&a, &b)))
 	});
 
 	let a: Vector<f32, TESTLEN> = rng.gen();

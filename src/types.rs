@@ -84,6 +84,7 @@ pub struct IntoIter<T, const N: usize> {
 
 impl<T, const N: usize> IntoIter<T, N> {
 	// fixme: this is probably rly slow cause of all the copies
+	// seems to be optimized out though
 	fn new(vector: Vector<T, N>) -> Self {
 		let data = unsafe {
 			let data =

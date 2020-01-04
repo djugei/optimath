@@ -75,6 +75,7 @@ impl<'a, T, const M: usize, const N: usize> IntoIterator for VectorView<'a, T, M
 	fn into_iter(self) -> Self::IntoIter { ViewIter { pos: 0, view: self } }
 }
 
+//todo: replace with ConstIterator
 pub struct ViewIter<'a, T, const M: usize, const N: usize> {
 	pos: usize,
 	view: VectorView<'a, T, M, N>,
