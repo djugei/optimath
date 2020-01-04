@@ -49,6 +49,14 @@ where
 	pub default fn dot(self, other: &'b Vector<T, M>) -> T { (self * other).into_iter().sum() }
 }
 
+impl<'a, 'b, T: 'a + 'b, const M: usize> Vector<T, M>
+where
+	&'a T: core::ops::Mul<&'b T, Output = T>,
+	T: core::iter::Sum,
+{
+	pub default fn dot(&'a self, other: &'b Vector<T, M>) -> T { (self * other).into_iter().sum() }
+}
+
 #[test]
 fn matrix_multiply() {
 	use rand::{thread_rng, Rng};
