@@ -2,7 +2,9 @@
 
 # Optimath
 
-A Linear Algebra library that uses const generics to be no_std and specialization to enable SIMD.
+A Linear Algebra library that uses const generics to be no_std and specialization to enable SIMD*.
+
+*simd blocked on compiler bug, autovectorization works well though.
 
 ## Examples
 
@@ -30,12 +32,12 @@ A Linear Algebra library that uses const generics to be no_std and specializatio
 
 ## Design
 
-The whole library is built around just one type, Vector<T, N> representing a Vector of N
+The whole library is built around just one type, [Vector<T, N>](Vector) representing a Vector of N
 elements of type T.
 
 In case T supports some math operation like addition (implements the Add trait) the Vector too
 supports that as an element-wise operation. As such a Vector<Vector<T: Add, N>, M> also
-supports addition, due to Vector<T: Add, N> being a type that supports Add.
+supports addition, due to Vector<T: Add, N> being a type that implements Add.
 
 Matrices and Tensors are therefore just Vectors within Vectors (within Vectors)
 
@@ -56,10 +58,10 @@ At this moment SIMD support is disabled while we wait for rustc to fix some ICE 
 
 Besides being hopefully useful as a library it is also an exploration of rusts newer advanced
 type system features. It is therefore an explicit goal to provide feedback to the developers of
-those features.
+those features. The [insights] module contains some of that.
 
 It is also meant to explore the design space of Linear Algebra libraries that utilize those
-features. As such it may serve as inspiration for how bigger linalg libraries might addopt
+features. As such it may serve as inspiration for how bigger linalg libraries might adopt
 them.
 
 ## Changelog (and future)
@@ -98,11 +100,34 @@ super well)
 ### 0.8.0
 * [ ] a BLAS compatible interface, including a C-interface. Probably in a different crate based
 on this
-* [ ] have 2 contributors :) come join the fun and headache about weird compiler bugs and
-pointer offset calculations
+* [ ] have 2 additional contributors :) come join the fun and headache about weird compiler bugs
+and pointer offset calculations
 
 ### 1.0.0
 * [ ] been used/tested in other peoples crates and considered usable
+
+
+## Ideas section
+
+currently the crate is built up from vectors, could instead be built "down" from dimensions
+see the (private) dimensional module for a sketch of that. its currently blocked on rust not
+being able to actually use any calculations for const-generic array sizes.
+positive: enable easier iteration/strided iteration as that would just be plain pointer maths.
+negative: harder/impossible to express explicit simd.
+
+
+Automatically build Vectors to be ready for simd and/or multiprocessing. also blocked on
+the same rust feature of calculated array sizes. see the (private) layout module for a preview.
+im not sure this is necessary though, seeing that with the sizes know at compile time rust
+generates very good simd and unrolls.
+positive: perfect simd every time on every platform. negative: higher workload, need to take
+care for every operation and every platform. negative: transposed and strided iteration gets
+harder
+
+for interoperability it would be nice to express things either being sized or unsized.
+especially for dimensions like matrix multiplication, U x S(3) * S(3) x U = U x U could be a
+common case to self multiply a list with unknown number of entries but known number of features
+(this is probably also blocked on the same rust bug, but i did not test yet)
 
 <!-- cargo-sync-readme end -->
 
