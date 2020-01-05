@@ -12,7 +12,9 @@ use core::{
 ///
 /// can be iterated over using [.into_iter()](#method.into_iter) on Vector or &Vector
 /// can be constructed from iterators using collect().
-#[repr(transparent)]
+///
+/// is repr(align(16)) for simd
+#[repr(align(16))] // todo: choose alignment based on simd-width
 #[derive(Copy, Clone)]
 pub struct Vector<T, const N: usize> {
 	pub(crate) inner: [T; N],
