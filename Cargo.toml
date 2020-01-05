@@ -1,6 +1,6 @@
 [package]
 name = "optimath"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["djugei <ddjugei@gmail.com"]
 edition = "2018"
 description = "Linear Algebra using const generics for no_std and specialization to enable SIMD."

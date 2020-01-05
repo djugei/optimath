@@ -66,16 +66,16 @@ them.
 
 ## Changelog (and future)
 
-### 0.1.0 (current)
+### 0.1.0
 * A Vector type that can do element-wise maths
 * Basic linear algebra operations
 * A sturdy design for future improvements
 
-### 0.2.0 (current-dev)
+### 0.2.0 (current)
 * serde support
 * rand support
 
-### 0.3.0
+### 0.3.0 (current-dev)
 * [ ] rearchitecture a bit so Vectors are generic over containers
 * [ ] strided iteration over matrices
 * [ ] windows-function
