@@ -109,7 +109,7 @@ and pointer offset calculations
 
 ## Ideas section
 
-currently the crate is built up from vectors, could instead be built "down" from dimensions
+Currently the crate is built up from vectors, could instead be built "down" from dimensions
 see the (private) dimensional module for a sketch of that. its currently blocked on rust not
 being able to actually use any calculations for const-generic array sizes.
 positive: enable easier iteration/strided iteration as that would just be plain pointer maths.
@@ -124,10 +124,15 @@ positive: perfect simd every time on every platform. negative: higher workload, 
 care for every operation and every platform. negative: transposed and strided iteration gets
 harder
 
-for interoperability it would be nice to express things either being sized or unsized.
+For interoperability it would be nice to express things either being sized or unsized.
 especially for dimensions like matrix multiplication, U x S(3) * S(3) x U = U x U could be a
 common case to self multiply a list with unknown number of entries but known number of features
 (this is probably also blocked on the same rust bug, but i did not test yet)
+
+Instead of instantly doing the calculations, provide an Iterator-like interface that builds a
+calculation and then runs it element by element as much as possible (matrix multiplication
+being a challenge ofc). that would allow for better cache-locality/less memory access.
+important, as after simd memory bandwidth seems to be the main bottleneck.
 
 <!-- cargo-sync-readme end -->
 

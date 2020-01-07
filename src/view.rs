@@ -6,11 +6,15 @@
 //! the Index trait sucks hard
 use crate::types::Matrix;
 
-#[derive(Clone, Copy)]
+#[derive(Debug)]
 pub struct TransposedMatrixView<'a, T, const M: usize, const N: usize> {
 	pub(crate) matrix: &'a Matrix<T, N, M>,
 }
 
+impl<'a, T, const M: usize, const N: usize> Copy for TransposedMatrixView<'a, T, M, N> {}
+impl<'a, T, const M: usize, const N: usize> Clone for TransposedMatrixView<'a, T, M, N> {
+	fn clone(&self) -> Self { *self }
+}
 impl<'a, T: 'a, const M: usize, const N: usize> TransposedMatrixView<'a, T, M, N> {
 	pub fn get(&self, index: usize) -> VectorView<'a, T, M, N> {
 		debug_assert!(index <= M);
@@ -62,10 +66,15 @@ impl<'a, T, const M: usize, const N: usize> Iterator for TransIter<'a, T, M, N> 
 	}
 }
 
-#[derive(Copy, Clone)]
+#[derive(Debug)]
 pub struct VectorView<'a, T, const M: usize, const N: usize> {
 	pub(crate) row: usize,
 	pub(crate) matrix: &'a Matrix<T, N, M>,
+}
+
+impl<'a, T, const M: usize, const N: usize> Copy for VectorView<'a, T, M, N> {}
+impl<'a, T, const M: usize, const N: usize> Clone for VectorView<'a, T, M, N> {
+	fn clone(&self) -> Self { *self }
 }
 
 impl<'a, T, const M: usize, const N: usize> IntoIterator for VectorView<'a, T, M, N> {
@@ -97,11 +106,16 @@ impl<'a, T, const M: usize, const N: usize> Iterator for ViewIter<'a, T, M, N> {
 }
 
 #[test]
-fn transmute_bounds_1() {
-	use rand::{thread_rng, Rng};
-	let mut rng = thread_rng();
-	let a: Matrix<f32, 1, 2> = rng.gen();
-	let b = a.transpose().materialize();
+fn transpose_bounds() {
+	extern crate std;
+	use std::println;
+	let a: Matrix<f32, 2, 3> = (0..3)
+		.map(|r| (0..2).map(|e| (e + (10 * r)) as f32).collect())
+		.collect();
+	println!("origin matrix: {:?}", a);
+	let b = a.transpose();
+	let b = b.materialize();
+	println!("{:?}", b);
 	let a2 = b.transpose().materialize();
 
 	assert_eq!(a, a2);

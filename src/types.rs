@@ -36,7 +36,7 @@ impl<T, const N: usize> Vector<T, N> {
 /// now you might be asking: hey djugei, why isn't this function just implemented directly on
 /// Vector?
 ///
-/// and that is a very good question
+/// and that is a very good question!
 /// well the answer is that for some reason if i copy this exact code into the types impl and
 /// delete the trait i get an infinite recursion error during compilation that i can't explain,
 /// feels a lot like spooky action at a distance and that i would consider a compiler bug
@@ -150,7 +150,9 @@ impl<T: Eq, const N: usize> Eq for Vector<T, N> {}
 use core::fmt::Debug;
 impl<T: Debug, const N: usize> Debug for Vector<T, N> {
 	fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::result::Result<(), core::fmt::Error> {
-		f.write_str("Vector[")?;
+		f.write_str("Vector<")?;
+		Debug::fmt(&N, f)?;
+		f.write_str(">[")?;
 		for i in self {
 			i.fmt(f)?;
 			f.write_str(", ")?;

@@ -61,3 +61,9 @@
 //! macro them.
 //!
 //! so im looking forward to them being implemented so i can play with them a bit
+//!
+//! # The Index trait
+//! sucks hard, cause it requires you to treturn an actual reference to something stored in the
+//! type, can't use it to on the fly generate a view (not 100% true as there is the fat pointer
+//! trick but thats not really... documented behaviour). had the Iterator trait made the same
+//! decision rust would be in a horrible state right now.
