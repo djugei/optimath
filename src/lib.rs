@@ -85,6 +85,9 @@
 //! * rand support
 //!
 //! ### 0.3.0 (current-dev)
+//! * moved more iterating over to ConstIterator
+//!
+//! ### 0.3.0
 //! * [ ] rearchitecture a bit so Vectors are generic over containers
 //! * [ ] strided iteration over matrices
 //! * [ ] windows-function

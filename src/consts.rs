@@ -23,12 +23,24 @@ unsafe impl<'a, T, const N: usize> ConstIndex<&'a mut T, N> for &'a mut Vector<T
 }
 
 use crate::VectorView;
-unsafe impl<'a, T, const M: usize, const N: usize> ConstIndex<&'a T, N>
+unsafe impl<'a, T, const M: usize, const N: usize> ConstIndex<&'a T, M>
 	for VectorView<'a, T, M, N>
 {
 	fn i(self, index: usize) -> &'a T {
 		let row = &self.matrix[index];
 		&row[self.row]
+	}
+}
+
+unsafe impl<'a, T, const M: usize, const N: usize> ConstIndex<VectorView<'a, T, M, N>, N>
+	for crate::TransposedMatrixView<'a, T, M, N>
+{
+	fn i(self, index: usize) -> VectorView<'a, T, M, N> {
+		debug_assert!(index <= M);
+		VectorView {
+			row: index,
+			matrix: self.matrix,
+		}
 	}
 }
 
@@ -82,6 +94,8 @@ where
  *   note: expected  consts::ConstIndex<&'a mut T, N>
  *            found  consts::ConstIndex<&'a mut T, N>
  *  which, at least to me, seem to be the exact same thing
+ *  how can i make the reference live for both the &mut self and the 'a of the reference contained
+ *  in self? shouldn't that be guaranteed as one is contained by the other?
 pub struct ConstIteratorMut<'a, T, C, const N: usize> {
 	pos: usize,
 	content: &'a mut C,

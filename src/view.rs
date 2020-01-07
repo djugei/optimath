@@ -4,7 +4,7 @@
 //! currently only transposed matrices and contained flipped vectors
 //!
 //! the Index trait sucks hard
-use crate::types::Matrix;
+use crate::{consts::ConstIterator, types::Matrix};
 
 #[derive(Debug)]
 pub struct TransposedMatrixView<'a, T, const M: usize, const N: usize> {
@@ -14,15 +14,6 @@ pub struct TransposedMatrixView<'a, T, const M: usize, const N: usize> {
 impl<'a, T, const M: usize, const N: usize> Copy for TransposedMatrixView<'a, T, M, N> {}
 impl<'a, T, const M: usize, const N: usize> Clone for TransposedMatrixView<'a, T, M, N> {
 	fn clone(&self) -> Self { *self }
-}
-impl<'a, T: 'a, const M: usize, const N: usize> TransposedMatrixView<'a, T, M, N> {
-	pub fn get(&self, index: usize) -> VectorView<'a, T, M, N> {
-		debug_assert!(index <= M);
-		VectorView {
-			row: index,
-			matrix: self.matrix,
-		}
-	}
 }
 
 impl<'a, T: 'a + Clone, const M: usize, const N: usize> TransposedMatrixView<'a, T, M, N> {
@@ -37,33 +28,9 @@ impl<'a, T: 'a + Clone, const M: usize, const N: usize> TransposedMatrixView<'a,
 
 impl<'a, T, const M: usize, const N: usize> IntoIterator for TransposedMatrixView<'a, T, M, N> {
 	type Item = VectorView<'a, T, M, N>;
-	type IntoIter = TransIter<'a, T, M, N>;
+	type IntoIter = ConstIterator<Self::Item, Self, N>;
 
-	fn into_iter(self) -> Self::IntoIter {
-		TransIter {
-			pos: 0,
-			trans: self,
-		}
-	}
-}
-
-pub struct TransIter<'a, T, const M: usize, const N: usize> {
-	pos: usize,
-	trans: TransposedMatrixView<'a, T, M, N>,
-}
-
-impl<'a, T, const M: usize, const N: usize> Iterator for TransIter<'a, T, M, N> {
-	type Item = VectorView<'a, T, M, N>;
-	fn next(&mut self) -> Option<VectorView<'a, T, M, N>> {
-		if self.pos == N {
-			None
-		} else {
-			//println!("pos: {}, M: {}, N: {}", self.pos, M, N);
-			let out = self.trans.get(self.pos);
-			self.pos += 1;
-			Some(out)
-		}
-	}
+	fn into_iter(self) -> Self::IntoIter { self.into() }
 }
 
 #[derive(Debug)]
@@ -79,30 +46,9 @@ impl<'a, T, const M: usize, const N: usize> Clone for VectorView<'a, T, M, N> {
 
 impl<'a, T, const M: usize, const N: usize> IntoIterator for VectorView<'a, T, M, N> {
 	type Item = &'a T;
-	type IntoIter = ViewIter<'a, T, M, N>;
+	type IntoIter = ConstIterator<&'a T, Self, M>;
 
-	fn into_iter(self) -> Self::IntoIter { ViewIter { pos: 0, view: self } }
-}
-
-//todo: replace with ConstIterator
-pub struct ViewIter<'a, T, const M: usize, const N: usize> {
-	pos: usize,
-	view: VectorView<'a, T, M, N>,
-}
-
-impl<'a, T, const M: usize, const N: usize> Iterator for ViewIter<'a, T, M, N> {
-	type Item = &'a T;
-	fn next(&mut self) -> Option<&'a T> {
-		if self.pos == M {
-			None
-		} else {
-			//println!("row: {}, pos: {}, M: {}, N: {}", self.view.row, self.pos, M, N);
-			let row = &self.view.matrix[self.pos];
-			let element = &row[self.view.row];
-			self.pos += 1;
-			Some(element)
-		}
-	}
+	fn into_iter(self) -> Self::IntoIter { self.into() }
 }
 
 #[test]
