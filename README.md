@@ -10,16 +10,22 @@ A Linear Algebra library that uses const generics to be no_std and specializatio
 
 ### Element-wise addition
 
-    use optimath::Vector;
-    let a: Vector<i32, 2000> = (0..2000).collect();
+    use optimath::{Vector, Stupidity};
+    use rand::{thread_rng, Rng};
+    let mut rng = thread_rng();
+
+    // Vectors can be initalized from an rng,
+    let a: Vector<i32, 2000> = rng.gen();
+    // from iterators
     let b: Vector<i32, 2000> = (0..2000).collect();
+    // with an initalizer function
+    let c: Vector<i32, 2000> = Vector::build_with_fn(|i| i as i32);
+    // or using Default
+    let d: Vector<i32, 2000> = Default::default();
 
-    // operations are only defined on references to Vectors
-    let c = &a + &b;
-
-    let r: Vector<i32, 2000> = (0..2000).map(|s| s+s).collect();
-
-    assert_eq!(c, r);
+    let e = &a + &b;
+    let f = &c + &d;
+    let h = &e + &f;
 
 ### Matrix multiplication
 
@@ -71,36 +77,36 @@ them.
 * Basic linear algebra operations
 * A sturdy design for future improvements
 
-### 0.2.0 (current)
+### 0.2.0
 * serde support
 * rand support
 
-### 0.3.0 (current-dev)
+### 0.3.0 (current)
 * moved more iterating over to ConstIterator
 
-### 0.3.0
-* [ ] rearchitecture a bit so Vectors are generic over containers
+### 0.X.0
+* [ ] re-architecture a bit so Vectors are generic over containers
 * [ ] strided iteration over matrices
 * [ ] windows-function
 
-### 0.4.0
+### 0.X.0
 * [ ] working SIMD on Vectors (blocked on rust compiler bug(s), but auto-vectorization works
 super well)
 * [ ] additional operations on Vectors and Matrixes (taking feature requests!)
 
 
-### 0.5.0
+### 0.X.0
 * [ ] interaction with dynamically sized vectors
     * [ ] widows-function on dynamically sized vectors
 
-### 0.6.0
+### 0.X.0
 * [ ] multi-threading for really large workloads
 
-### 0.7.0
+### 0.X.0
 * [ ] full specialized SIMD for sse, avx and avx512
 * [ ] full SIMD between Vectors, dynamic Vectors and vector views
 
-### 0.8.0
+### 0.X.0
 * [ ] a BLAS compatible interface, including a C-interface. Probably in a different crate based
 on this
 * [ ] have 2 additional contributors :) come join the fun and headache about weird compiler bugs

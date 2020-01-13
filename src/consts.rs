@@ -9,6 +9,9 @@
 /// mutability: just implement this twice, with &E &mut E as T
 ///
 /// unsafety: calling .i(x) with x < N must successfully return T
+///
+/// unsafety: .i(x) and .i(y) return different objects when x != y.
+/// i.e. they do not alias.
 pub unsafe trait ConstIndex<T, const N: usize> {
 	fn i(self, index: usize) -> T;
 }
@@ -90,26 +93,35 @@ where
 	}
 }
 
-/* this produces some weird error about mismatching lifetimes
- *   note: expected  consts::ConstIndex<&'a mut T, N>
- *            found  consts::ConstIndex<&'a mut T, N>
- *  which, at least to me, seem to be the exact same thing
- *  how can i make the reference live for both the &mut self and the 'a of the reference contained
- *  in self? shouldn't that be guaranteed as one is contained by the other?
 pub struct ConstIteratorMut<'a, T, C, const N: usize> {
 	pos: usize,
-	content: &'a mut C,
-	marker: core::marker::PhantomData<T>,
+	content: *mut C,
+	marker: core::marker::PhantomData<&'a mut T>,
 }
 
-impl<'a, T: 'a, C, const N: usize> Iterator for ConstIteratorMut<'a, T, C, N>
+impl<'a, T: 'a, C: 'a, const N: usize> Iterator for ConstIteratorMut<'a, T, C, N>
 where
 	&'a mut C: ConstIndex<&'a mut T, N>,
 {
 	type Item = &'a mut T;
-	fn next(&mut self) -> Option<&mut T> {
+	fn next(&mut self) -> Option<&'a mut T> {
 		if self.pos < N {
-			let ret = self.content.i(self.pos);
+			// this is to work around lifetime issues (but its like legit)
+			// we can't just do this the direct way with self.content being &'a mut C
+			// because then content.i(x) would return &'a mut T
+			// but we need &a mut T, i.e. living as long/not outliving as &mut self
+			// can't express that concept though cause its an anonymous lifetime
+			// and changing that would break the iterator api.
+			// the problem that would be occuring is that calling .next() twice and storing
+			// the result might return the same reference twice leading to mutable
+			// aliasing. we can guarantee that not to happen though, because the unsafe
+			// trait ConstIndex provides the method .i(x) which is guaranteed to not alias for
+			// different indices. as we increment the index on each iteration we never
+			// alias.
+			//
+			// additionally there are tests that are run with miri just to make sure
+			let content: &mut C = unsafe { core::mem::transmute(self.content) };
+			let ret = content.i(self.pos);
 			self.pos += 1;
 			Some(ret)
 		} else {
@@ -117,7 +129,19 @@ where
 		}
 	}
 }
-*/
+
+impl<'a, T, C: 'a, const N: usize> From<&'a mut C> for ConstIteratorMut<'a, T, C, N>
+where
+	&'a mut C: ConstIndex<&'a mut T, N>,
+{
+	fn from(content: &'a mut C) -> Self {
+		Self {
+			pos: 0,
+			content: content as *mut _,
+			marker: Default::default(),
+		}
+	}
+}
 
 #[test]
 fn const_iter() {

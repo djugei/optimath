@@ -59,10 +59,7 @@ fn transpose_bounds() {
 		.map(|r| (0..2).map(|e| (e + (10 * r)) as f32).collect())
 		.collect();
 	println!("origin matrix: {:?}", a);
-	let b = a.transpose();
-	let b = b.materialize();
-	println!("{:?}", b);
-	let a2 = b.transpose().materialize();
+	let a2 = a.transpose().materialize().transpose().materialize();
 
 	assert_eq!(a, a2);
 }

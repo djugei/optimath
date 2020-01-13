@@ -56,8 +56,9 @@ macro_rules! impl_assign_op {
                         T: 'a + 'b,
                 {
                         default fn $fn(&mut self, other: B) {
-				let iter = self.inner.iter_mut().enumerate();
-				for (i, s) in iter {
+                            use crate::consts::ConstIteratorMut;
+				let iter  = ConstIteratorMut::from(self);
+				for (i, s) in iter.enumerate() {
 					$op::$fn(s, other.i(i));
 				}
                         }
