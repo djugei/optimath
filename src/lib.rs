@@ -170,6 +170,8 @@ mod consts;
 // views on underlying vectors
 mod view;
 
+pub mod templatemetamath;
+
 #[cfg(feature = "serde")]
 mod serialize;
 
