@@ -15,7 +15,12 @@
 //todo: add transpose/matrix multiplication, potentially switch from basing this off off ConstIndex
 //to ConstIter
 
-use crate::consts::{ConstIndex, ConstIterator};
+// having an unused import causes? exposes? an infinite type recursion bug.
+// swap these imports for that.
+// having an unsused import in a different file (src/consts.rs for example) hides it again.
+// rustc 1.42.0-nightly (6d3f4e0aa 2020-01-25)
+//use crate::consts::{ConstIndex, ConstIterator};
+use crate::consts::ConstIndex;
 use core::ops::*;
 
 pub struct VAdd<T, L, R, LT, RT, const N: usize>

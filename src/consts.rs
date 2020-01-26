@@ -12,6 +12,8 @@
 ///
 /// unsafety: .i(x) and .i(y) return different objects when x != y.
 /// i.e. they do not alias.
+// comment the "use core::ops::*;" out to get a surprise!!
+//use core::ops::*;
 pub unsafe trait ConstIndex<T, const N: usize> {
 	fn i(self, index: usize) -> T;
 }
