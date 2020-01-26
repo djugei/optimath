@@ -18,45 +18,42 @@
 use crate::consts::{ConstIndex, ConstIterator};
 use core::ops::*;
 
-pub struct VAdd<'a, 'b, T, L, R, const N: usize>
+pub struct VAdd<T, L, R, LT, RT, const N: usize>
 where
 	// use Borrow maybe?
 	// hard to abstract over lifetimes + owned/borrowd
-	L: ConstIndex<&'a T, N> + Copy + Clone,
-	R: ConstIndex<&'b T, N> + Copy + Clone,
-	&'a T: Add<&'b T, Output = T>,
-	T: 'a + 'b,
+	L: ConstIndex<LT, N> + Copy + Clone,
+	R: ConstIndex<RT, N> + Copy + Clone,
+	LT: Add<RT, Output = T>,
 {
 	l: L,
 	r: R,
-	m: core::marker::PhantomData<(&'a T, &'b T)>,
+	m: core::marker::PhantomData<(T, LT, RT)>,
 }
 
-/*
-impl<'a, 'b, 's, T, L, R, const N: usize> Copy for VAdd<'a, 'b, T, L, R, N>
+impl<T, L, R, LT, RT, const N: usize> Copy for VAdd<T, L, R, LT, RT, N>
 where
-	L: ConstIndex<&'a T, N> + Copy + Clone,
-	R: ConstIndex<&'b T, N> + Copy + Clone,
-	&'a T: Add<&'b T, Output = T>,
-	T: 'a + 'b,
+	L: ConstIndex<LT, N> + Copy + Clone,
+	R: ConstIndex<RT, N> + Copy + Clone,
+	LT: Add<RT, Output = T>,
 {
 }
-impl<'a, 'b, 's, T, L, R, const N: usize> Clone for VAdd<'a, 'b, T, L, R, N>
+
+impl<T, L, R, LT, RT, const N: usize> Clone for VAdd<T, L, R, LT, RT, N>
 where
-	L: ConstIndex<&'a T, N> + Copy + Clone,
-	R: ConstIndex<&'b T, N> + Copy + Clone,
-	&'a T: Add<&'b T, Output = T>,
-	T: 'a + 'b,
+	L: ConstIndex<LT, N> + Copy + Clone,
+	R: ConstIndex<RT, N> + Copy + Clone,
+	LT: Add<RT, Output = T>,
 {
 	fn clone(&self) -> Self { *self }
 }
+
 // this is safe because the underlying ConstIndex implementations are guaranteed to be safe
-unsafe impl<'a, 'b, 's, T, L, R, const N: usize> ConstIndex<T, N> for &'s VAdd<'a, 'b, T, L, R, N>
+unsafe impl<T, L, R, LT, RT, const N: usize> ConstIndex<T, N> for VAdd<T, L, R, LT, RT, N>
 where
-	L: ConstIndex<&'a T, N> + Copy,
-	R: ConstIndex<&'b T, N> + Copy,
-	&'a T: Add<&'b T, Output = T>,
-	T: 'a + 'b,
+	L: ConstIndex<LT, N> + Copy + Clone,
+	R: ConstIndex<RT, N> + Copy + Clone,
+	LT: Add<RT, Output = T>,
 {
 	#[inline]
 	fn i(self, index: usize) -> T {
@@ -65,15 +62,24 @@ where
 		l + r
 	}
 }
-impl<'a, 'b, 's, 'o, T, L, R, O, const N: usize> Add<&'o O> for &'s VAdd<'a, 'b, T, L, R, N>
+
+// this restricts other to const-Index to the same type as self
+//
+// this is not a necessary restriction, but rust type system does not allow for expressing anything
+// more generic due to "unconstrained type parameters"
+//
+// this might be possible once GAT lands, allowing for stuff like (X,Y) + (Z,) = (X, Y, Z) or
+// the like. like for example T + &T which is kinda important...
+impl<T, L, R, LT, RT, O, NT, const N: usize> Add<O> for VAdd<T, L, R, LT, RT, N>
 where
-	L: ConstIndex<&'a T, N> + Copy + Clone,
-	R: ConstIndex<&'b T, N> + Copy + Clone,
-	&'a T: Add<&'b T, Output = T>,
-	T: 'a + 'b + 'o + 's,
-	&'o O: ConstIndex<&'o T, N> + Copy + Clone,
+	L: ConstIndex<LT, N> + Copy + Clone,
+	R: ConstIndex<RT, N> + Copy + Clone,
+	LT: Add<RT, Output = T>,
+
+	O: ConstIndex<T, N> + Copy + Clone,
+	T: Add<T, Output = NT>,
 {
-	type Output = VAdd<'s, 'o, T, &'s VAdd<'a, 'b, T, L, R, N>, O, N>;
+	type Output = VAdd<NT, Self, O, T, T, N>;
 	fn add(self, other: O) -> Self::Output {
 		VAdd {
 			l: self,
@@ -83,11 +89,35 @@ where
 	}
 }
 
-impl<T, L, R, const N: usize> VAdd<T, L, R, N>
+/*
+// can't even specialize for vector, cause "downstream crates may implement ConstIndex
+// except im already implementing that in this crate...
+use crate::Vector;
+impl<'o, T, L, R, LT, RT, NT, const N: usize> Add<&'o Vector<T, N>> for VAdd<T, L, R, LT, RT, N>
 where
-	L: ConstIndex<T, N> + Copy + Clone,
-	R: ConstIndex<T, N> + Copy + Clone,
-	T: Add<T, Output = T> + Copy + Clone,
+	L: ConstIndex<LT, N> + Copy + Clone,
+	R: ConstIndex<RT, N> + Copy + Clone,
+	LT: Add<RT, Output = T>,
+
+	T: Add<&'o T, Output = NT>,
+{
+	type Output = VAdd<NT, Self, &'o Vector<T, N>, T, T, N>;
+	fn add(self, other: &'o Vector<T, N>) -> Self::Output {
+		VAdd {
+			l: self,
+			r: other,
+			m: Default::default(),
+		}
+	}
+}
+*/
+
+/*
+impl<T, L, R, LT, RT, const N: usize> VAdd<T, L, R, LT, RT, N>
+where
+	L: ConstIndex<LT, N> + Copy + Clone,
+	R: ConstIndex<RT, N> + Copy + Clone,
+	LT: Add<RT, Output = T>,
 {
 	pub fn new(l: L, r: R) -> Self {
 		Self {
@@ -97,8 +127,9 @@ where
 		}
 	}
 
-	pub fn realize(self) -> Vector<T, N> { ConstIterator::from(self).collect() }
+	pub fn realize(self) -> crate::Vector<T, N> { ConstIterator::from(self).collect() }
 }
+
 
 #[cfg(test)]
 pub(crate) const TESTLEN: usize = 777usize;
