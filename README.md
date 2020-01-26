@@ -83,6 +83,7 @@ them.
 
 ### 0.3.0 (current)
 * moved more iterating over to ConstIterator
+* add templatemetamaths (building a calculation, then building the result element by element)
 
 ### 0.X.0
 * [ ] re-architecture a bit so Vectors are generic over containers
@@ -137,11 +138,6 @@ For interoperability it would be nice to express things either being sized or un
 especially for dimensions like matrix multiplication, U x S(3) * S(3) x U = U x U could be a
 common case to self multiply a list with unknown number of entries but known number of features
 (this is probably also blocked on the same rust bug, but i did not test yet)
-
-Instead of instantly doing the calculations, provide an Iterator-like interface that builds a
-calculation and then runs it element by element as much as possible (matrix multiplication
-being a challenge ofc). that would allow for better cache-locality/less memory access.
-important, as after simd memory bandwidth seems to be the main bottleneck.
 
 <!-- cargo-sync-readme end -->
 

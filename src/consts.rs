@@ -12,8 +12,6 @@
 ///
 /// unsafety: .i(x) and .i(y) return different objects when x != y.
 /// i.e. they do not alias.
-// comment the "use core::ops::*;" out to get a surprise!!
-//use core::ops::*;
 pub unsafe trait ConstIndex<T, const N: usize> {
 	fn i(self, index: usize) -> T;
 }
@@ -21,6 +19,16 @@ pub unsafe trait ConstIndex<T, const N: usize> {
 use crate::Vector;
 unsafe impl<'a, T, const N: usize> ConstIndex<&'a T, N> for &'a Vector<T, N> {
 	fn i(self, index: usize) -> &'a T { &self.inner[index] }
+}
+
+// lets just hope for the optimizer. only added this for templatemetamath to be usable.
+// could think about changing the Add impls so &Vector returning T is accepted
+// and only impl ConstIndex for Copy types
+unsafe impl<'a, T, const N: usize> ConstIndex<T, N> for Vector<T, N>
+where
+	T: Copy,
+{
+	fn i(self, index: usize) -> T { *&self.inner[index] }
 }
 
 unsafe impl<'a, T, const N: usize> ConstIndex<&'a mut T, N> for &'a mut Vector<T, N> {
@@ -151,7 +159,7 @@ fn const_iter() {
 	use rand::{thread_rng, Rng};
 	let mut rng = thread_rng();
 	let a: Vector<f32, 40> = rng.gen();
-	let iter = ConstIterator {
+	let iter: ConstIterator<&f32, _, 40> = ConstIterator {
 		pos: 0,
 		content: &a,
 		marker: Default::default(),

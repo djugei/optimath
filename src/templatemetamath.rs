@@ -15,12 +15,7 @@
 //todo: add transpose/matrix multiplication, potentially switch from basing this off off ConstIndex
 //to ConstIter
 
-// having an unused import causes? exposes? an infinite type recursion bug.
-// swap these imports for that.
-// having an unsused import in a different file (src/consts.rs for example) hides it again.
-// rustc 1.42.0-nightly (6d3f4e0aa 2020-01-25)
-//use crate::consts::{ConstIndex, ConstIterator};
-use crate::consts::ConstIndex;
+use crate::consts::{ConstIndex, ConstIterator};
 use core::ops::*;
 
 pub struct VAdd<T, L, R, LT, RT, const N: usize>
@@ -116,8 +111,7 @@ where
 	}
 }
 */
-
-/*
+//
 impl<T, L, R, LT, RT, const N: usize> VAdd<T, L, R, LT, RT, N>
 where
 	L: ConstIndex<LT, N> + Copy + Clone,
@@ -135,12 +129,12 @@ where
 	pub fn realize(self) -> crate::Vector<T, N> { ConstIterator::from(self).collect() }
 }
 
-
 #[cfg(test)]
 pub(crate) const TESTLEN: usize = 777usize;
 
 #[test]
 fn calc_chain() {
+	use crate::Vector;
 	use rand::{thread_rng, Rng};
 	let mut rng = thread_rng();
 	let a: Vector<f32, TESTLEN> = rng.gen();
@@ -149,6 +143,10 @@ fn calc_chain() {
 	let d: Vector<f32, TESTLEN> = rng.gen();
 	let e: Vector<f32, TESTLEN> = rng.gen();
 
-	let ab = VAdd::new(&a, &b);
+	let ab = VAdd::new(a, b);
+	let abc = ab + c;
+	let abcd = abc + d;
+	let abcde = abcd + e;
+
+	let _res = abcde.realize();
 }
-*/
