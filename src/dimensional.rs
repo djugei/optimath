@@ -24,10 +24,9 @@ impl<T: Dimension, const N: usize> Dimension for Multi<T, N> {
 }
 
 struct Mathable<T, Dim: Dimension> {
-	inner: ICEAvoider<T, { Dim::MUL }>,
+	// cool, so ice fixed, but by removing functionality.
+	// I do indeed want to depend on the generic parameter.
+	// that is kind of the point.
+	inner: [T; Dim::MUL],
 	marker: PhantomData<Dim>,
-}
-
-struct ICEAvoider<T, const N: usize> {
-	inner: [T; N],
 }

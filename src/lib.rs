@@ -148,7 +148,7 @@
 //! common case to self multiply a list with unknown number of entries but known number of features
 //! (this is probably also blocked on the same rust bug, but i did not test yet)
 
-mod dimensional;
+//mod dimensional;
 
 pub mod insights;
 
