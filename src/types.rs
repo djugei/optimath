@@ -113,7 +113,11 @@ impl<T, const N: usize> Iterator for IntoIter<T, N> {
 
 impl<T, const N: usize> Drop for IntoIter<T, N> {
 	fn drop(&mut self) {
-		for _item in self { }
+		let range = self.pos..N;
+		for offset in range {
+			self.pos = offset;
+			unsafe { self.data.get_unchecked(self.pos).assume_init_read() };
+		}
 	}
 }
 
