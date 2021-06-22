@@ -1,19 +1,19 @@
 #![no_std]
 #![allow(incomplete_features)]
-#![feature(const_generics)]
 #![feature(specialization)]
-#![feature(trait_alias)]
 #![feature(maybe_uninit_extra)]
 //#![feature(avx512_target_feature)]
-#![feature(associated_type_defaults)]
-#![feature(fixed_size_array)]
-#![feature(const_fn)]
+#![feature(array_methods)]
 
 //! # Optimath
 //!
 //! A Linear Algebra library that uses const generics to be no_std and specialization to enable SIMD*.
 //!
 //! *simd blocked on compiler bug, autovectorization works well though.
+//!
+//! Note: [nalgebra](https://crates.io/crates/nalgebra) now supports const generics
+//! and is more full-featured than this crate.
+//! Maybe it fits your needs better.
 //!
 //! ## Examples
 //!

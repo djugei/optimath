@@ -49,7 +49,6 @@ impl<'de, T: Deserialize<'de>, const N: usize> Visitor<'de> for ElementVisitor<T
 #[test]
 fn ser_de_test() {
 	use crate::Matrix;
-	use core::array::FixedSizeArray;
 	use rand::{thread_rng, Rng};
 	let mut rng = thread_rng();
 

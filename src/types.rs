@@ -112,9 +112,7 @@ impl<T, const N: usize> Iterator for IntoIter<T, N> {
 }
 
 impl<T, const N: usize> Drop for IntoIter<T, N> {
-	fn drop(&mut self) {
-		for _item in self { }
-	}
+	fn drop(&mut self) { for _item in self {} }
 }
 
 impl<T, const N: usize> IntoIterator for Vector<T, N> {

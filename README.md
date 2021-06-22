@@ -6,6 +6,10 @@ A Linear Algebra library that uses const generics to be no_std and specializatio
 
 *simd blocked on compiler bug, autovectorization works well though.
 
+Note: [nalgebra](https://crates.io/crates/nalgebra) now supports const generics
+and is more full-featured than this crate.
+Maybe it fits your needs better.
+
 ## Examples
 
 ### Element-wise addition

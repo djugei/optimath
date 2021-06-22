@@ -3,7 +3,7 @@ hard_tabs = true
 fn_single_line = true
 struct_lit_single_line = true
 
-merge_imports = true
+imports_granularity = "Crate"
 use_field_init_shorthand = true
 
 overflow_delimited_expr = true
